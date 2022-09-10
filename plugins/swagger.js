@@ -1,61 +1,44 @@
 'use strict'
+const fp = require("fastify-plugin")
+const pack = require("./../package.json")
 
-const fp = require('fastify-plugin')
-
-// the use of fastify-plugin is required to be able
-// to export the decorators to the outer scope
-
-module.exports = fp(async function (fastify, opts) {
-  await fastify.register(require('@fastify/swagger'), {
-    routePrefix: '/documentation',
-    swagger: {
+module.exports = fp(async function(fastify, opts) {
+  const OAS3Format = {
+    routePrefix: '/docs',
+    hideUntagged: true,
+    exposeRoute: true,
+    openapi: {
       info: {
-        title: 'Test swagger',
-        description: 'Testing the Fastify swagger API',
-        version: '0.1.0'
+        title: 'Ceylonuni API',
+        version: pack.version,
       },
-      externalDocs: {
-        url: 'https://swagger.io',
-        description: 'Find more info here'
-      },
-      host: 'localhost',
-      schemes: ['http'],
-      consumes: ['application/json'],
-      produces: ['application/json'],
-      tags: [
-        { name: 'user', description: 'User related end-points' },
-        { name: 'code', description: 'Code related end-points' }
+      tags: [{
+          "name": "Test",
+          "description": "For test",
+        },
       ],
-      definitions: {
-        User: {
-          type: 'object',
-          required: ['id', 'email'],
-          properties: {
-            id: { type: 'string', format: 'uuid' },
-            firstName: { type: 'string' },
-            lastName: { type: 'string' },
-            email: {type: 'string', format: 'email' }
-          }
-        }
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
       },
-      securityDefinitions: {
-        apiKey: {
-          type: 'apiKey',
-          name: 'apiKey',
-          in: 'header'
-        }
-      }
     },
     uiConfig: {
-      docExpansion: 'full',
+      docExpansion: 'none',
       deepLinking: false
     },
     uiHooks: {
-      onRequest: function (request, reply, next) { next() },
-      preHandler: function (request, reply, next) { next() }
+      onRequest: function(request, reply, next) { next(); },
+      preHandler: function(request, reply, next) {
+               next(); 
+      }
     },
     staticCSP: true,
     transformStaticCSP: (header) => header,
-    exposeRoute: true
-  })
+  }
+  fastify.register(require("@fastify/swagger"), OAS3Format)
 })

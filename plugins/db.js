@@ -6,11 +6,7 @@ const fp = require('fastify-plugin')
 // to export the decorators to the outer scope
 
 module.exports = fp(async function (fastify, opts) {
-  fastify.register(require('@fastify/mongodb'), {
-    // force to close the mongodb connection when app stopped
-    // the default value is false
-    forceClose: true,
-    
-    url: 'mongodb+srv://Sachchin06:ceylonuni@cluster0.jiqdoh2.mongodb.net/test'
+  fastify.register(require('@fastify/postgres'), {
+    connectionString: 'postgresql://postgres:root@localhost:5432/ceylonuni'
   })
 })
