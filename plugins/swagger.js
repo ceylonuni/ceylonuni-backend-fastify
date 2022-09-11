@@ -16,6 +16,11 @@ module.exports = fp(async function(fastify, opts) {
           "name": "Test",
           "description": "For test",
         },
+
+        {
+          "name": "Admin",
+          "description": "For Admin Use",
+        },
       ],
       components: {
         securitySchemes: {
