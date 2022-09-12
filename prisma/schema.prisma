@@ -61,10 +61,13 @@ model students {
   updated_at           DateTime?          @db.Timestamptz(6)
   deleted_at           DateTime?          @db.Timestamptz(6)
   university_courses   university_courses @relation(fields: [university_course_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "students_university_courses_id_fk")
+  accounts             accounts[]
 }
 
 model accounts {
   id          Int       @id @default(autoincrement())
+  student_id  Int
+  email       String    @db.VarChar
   username    String    @db.VarChar
   password    String    @db.VarChar
   isVerified  Boolean?  @default(false)
@@ -73,6 +76,7 @@ model accounts {
   created_at  DateTime? @db.Timestamptz(6)
   updated_at  DateTime? @db.Timestamptz(6)
   deleted_at  DateTime? @db.Timestamptz(6)
+  students    students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "accounts_students_id_fk")
 }
 
 model university_mails {
