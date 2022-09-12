@@ -54,7 +54,7 @@ model students {
   first_name           String             @db.VarChar
   last_name            String             @db.VarChar
   mobile               String
-  email                String
+  email                String             @unique
   address              String
   university_course_id Int
   created_at           DateTime?          @db.Timestamptz(6)

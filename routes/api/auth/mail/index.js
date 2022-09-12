@@ -24,6 +24,14 @@ module.exports = async function (fastify, opts) {
         var end_domin = request.body.email.split("@")[1];
         var items = [];
         var message = {};
+        var item = await fastify.prisma.students.findUnique({
+          where: {
+            email: request.body.email,
+          },
+        });
+        if (item) {
+          throw new Error("This email is alreday taken.");
+        }
         items = await fastify.prisma.university_mails.findMany({
           where: {
             deleted_at: null,
@@ -33,12 +41,12 @@ module.exports = async function (fastify, opts) {
           },
         });
         if (items.length == 0) {
-          message.is_university_mail = false;
+          throw new Error("The mail you entered is not valid.");
         } else {
-          const token = fastify.jwt.sign({email:request.body.email})
+          const token = fastify.jwt.sign({ email: request.body.email });
           let testAccount = await nodemailer.createTestAccount();
           let transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
+            host: "smtp.gmail.com",
             port: 587,
             secure: false, // true for 465, false for other ports
             auth: {
@@ -52,9 +60,9 @@ module.exports = async function (fastify, opts) {
             to: request.body.email, // list of receivers
             subject: "Ceylonuni", // Subject line
             text: "Email Verification", // plain text body
-            html: "<b>Hello world?</b>" + token, // html body
+            html: "ceylonuni.lk/register?token="+token,
           });
-  
+
           transporter.sendMail(function (error, info) {
             if (error) {
               console.log(error);
@@ -62,7 +70,7 @@ module.exports = async function (fastify, opts) {
               console.log("Email sent: " + info.response);
             }
           });
-          message.is_university_mail = true;
+          message.message = 'Verification link has been sent to your mail.';
         }
         reply.send(message);
       } catch (error) {

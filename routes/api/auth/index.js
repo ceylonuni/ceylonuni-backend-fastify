@@ -1,6 +1,8 @@
 "use strict";
 const nodemailer = require("nodemailer");
+const bcrypt = require("bcrypt");
 
+const moment = require("moment");
 module.exports = async function (fastify, opts) {
   fastify.post(
     "/register",
@@ -11,11 +13,38 @@ module.exports = async function (fastify, opts) {
         tags: ["Auth"],
         body: {
           type: "object",
-          required: ["email"],
+          required: [
+            "first_name",
+            "last_name",
+            "password",
+            "mobile",
+            "address",
+            "university_course_id",
+          ],
           properties: {
-            email: {
+            first_name: {
               type: "string",
-              default: "example@stu.kln.ac.lk",
+              default: "First name",
+            },
+            last_name: {
+              type: "string",
+              default: "Last name",
+            },
+            password: {
+              type: "string",
+              default: "Password",
+            },
+            mobile: {
+              type: "string",
+              default: "0771234567",
+            },
+            address: {
+              type: "string",
+              default: "Address",
+            },
+            university_course_id: {
+              type: "integer",
+              default: 1,
             },
           },
         },
@@ -23,124 +52,39 @@ module.exports = async function (fastify, opts) {
     },
     async (request, reply) => {
       try {
-        console.log(request.user.email)
-        var end_domin = request.body.email.split("@")[1];
-        var items = [];
-        var message = {};
-        items = await fastify.prisma.university_mails.findMany({
+        var item = await fastify.prisma.students.findUnique({
           where: {
-            deleted_at: null,
-            email: {
-              endsWith: end_domin,
-            },
+            email: request.user.email,
           },
         });
-        if (items.length == 0) {
-          message.is_university_mail = false;
-        } else {
-          const token = fastify.jwt.sign({email:request.body.email})
-          let testAccount = await nodemailer.createTestAccount();
-          let transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-              user: fastify.config.EMAIL_HOST_USER,
-              pass: fastify.config.EMAIL_HOST_PASSWORD,
-            },
-          });
-          // send mail with defined transport object
-          let info = await transporter.sendMail({
-            from: '"Ceylonuni" <test@ceylonuni.com>', // sender address
-            to: request.body.email, // list of receivers
-            subject: "Ceylonuni", // Subject line
-            text: "Email Verification", // plain text body
-            html: "<b>Hello world?</b>" + token, // html body
-          });
-  
-          transporter.sendMail(function (error, info) {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log("Email sent: " + info.response);
-            }
-          });
-          message.is_university_mail = true;
+        if (item) {
+          throw new Error("This email is alreday taken.");
         }
-        reply.send(message);
-      } catch (error) {
-        reply.send(error);
-      } finally {
-        await fastify.prisma.$disconnect();
-      }
-    }
-  );
-
-  fastify.post(
-    "/check",
-    {
-      preValidation: [fastify.verifyEmail],
-      schema: {
-        security: [{ bearerAuth: [] }],
-        tags: ["Auth"],
-        body: {
-          type: "object",
-          required: ["email"],
-          properties: {
-            email: {
-              type: "string",
-              default: "example@stu.kln.ac.lk",
-            },
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      try {
-        var end_domin = request.body.email.split("@")[1];
-        var items = [];
-        var message = {};
-        items = await fastify.prisma.university_mails.findMany({
-          where: {
-            deleted_at: null,
-            email: {
-              endsWith: end_domin,
-            },
+        var student = await fastify.prisma.students.create({
+          data: {
+            first_name: request.body.first_name,
+            last_name: request.body.last_name,
+            mobile: request.body.mobile,
+            address: request.body.address,
+            email: request.user.email,
+            university_course_id: request.body.university_course_id,
+            created_at: moment().toISOString(),
+            updated_at: moment().toISOString(),
           },
         });
-        if (items.length == 0) {
-          message.is_university_mail = false;
-        } else {
-          const token = fastify.jwt.sign({email:request.body.email})
-          let testAccount = await nodemailer.createTestAccount();
-          let transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-              user: fastify.config.EMAIL_HOST_USER,
-              pass: fastify.config.EMAIL_HOST_PASSWORD,
-            },
-          });
-          // send mail with defined transport object
-          let info = await transporter.sendMail({
-            from: '"Ceylonuni" <test@ceylonuni.com>', // sender address
-            to: request.body.email, // list of receivers
-            subject: "Ceylonuni", // Subject line
-            text: "Email Verification", // plain text body
-            html: "<b>Hello world?</b>" + token, // html body
-          });
-  
-          transporter.sendMail(function (error, info) {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log("Email sent: " + info.response);
-            }
-          });
-          message.is_university_mail = true;
-        }
-        reply.send(message);
+        const salt = await bcrypt.genSalt(10);
+        const password = await bcrypt.hash(request.body.password, salt);
+        var account = await fastify.prisma.accounts.create({
+          data: {
+            student_id: student.id,
+            username:request.body.first_name,
+            email: request.user.email,
+            password: password,
+            created_at: moment().toISOString(),
+            updated_at: moment().toISOString(),
+          },
+        });
+        reply.send({message:'success'});
       } catch (error) {
         reply.send(error);
       } finally {

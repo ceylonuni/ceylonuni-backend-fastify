@@ -38,6 +38,7 @@ exports.up = function(db) {
     email:{
       type:'text',
       notNull: true,
+      unique:true,
     },
     address: {
       type:'text',
