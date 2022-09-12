@@ -23,6 +23,24 @@ exports.up = function(db) {
       primaryKey: true, 
       autoIncrement: true,
     },
+    student_id: { 
+      type: 'int', 
+      notNull: true,
+      foreignKey: {
+        name: 'accounts_students_id_fk',
+        table: 'students',
+        rules: {
+          onDelete: 'CASCADE',
+          onUpdate: 'RESTRICT'
+        },
+        mapping: 'id'
+      }
+      
+    },
+    email: {
+      type:'string',
+      notNull: true,
+    },
     username: {
       type:'string',
       notNull: true,
