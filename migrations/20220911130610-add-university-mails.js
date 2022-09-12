@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('accounts', {
+  return db.createTable('university_mails', {
     id: { 
       type: 'int', 
       unsigned: true,
@@ -23,25 +23,9 @@ exports.up = function(db) {
       primaryKey: true, 
       autoIncrement: true,
     },
-    username: {
+    email: {
       type:'string',
       notNull: true,
-    },
-    password: {
-      type:'string',
-      notNull: true,
-    },
-    isVerified: {
-      type:'boolean',
-      defaultValue:false,
-    },
-    verified_at:{
-      type:'timestamp',
-      timezone: true,
-    },
-    status: {
-      type:'boolean',
-      defaultValue:true,
     },
     created_at: {
       type:'timestamp',
@@ -59,7 +43,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('accounts');
+  return db.dropTable('university_mails');
 };
 
 exports._meta = {
