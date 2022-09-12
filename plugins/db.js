@@ -7,6 +7,6 @@ const fp = require('fastify-plugin')
 
 module.exports = fp(async function (fastify, opts) {
   fastify.register(require('@fastify/postgres'), {
-    connectionString: 'postgresql://postgres:root@localhost:5432/ceylonuni'
+    connectionString: fastify.config.DATABASE_URL,
   })
 })

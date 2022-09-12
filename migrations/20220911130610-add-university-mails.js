@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('students', {
+  return db.createTable('university_mails', {
     id: { 
       type: 'int', 
       unsigned: true,
@@ -23,40 +23,9 @@ exports.up = function(db) {
       primaryKey: true, 
       autoIncrement: true,
     },
-    first_name: {
+    email: {
       type:'string',
       notNull: true,
-    },
-    last_name: {
-      type:'string',
-      notNull: true,
-    },
-    mobile: {
-      type:'text',
-      notNull: true,
-    },
-    email:{
-      type:'text',
-      notNull: true,
-      unique:true,
-    },
-    address: {
-      type:'text',
-      notNull: true,
-    },
-    university_course_id: {
-      type:'int',
-      notNull: true,
-      foreignKey: {
-        name: 'students_university_courses_id_fk',
-        table: 'university_courses',
-        rules: {
-          onDelete: 'CASCADE',
-          onUpdate: 'RESTRICT'
-        },
-        mapping: 'id'
-      }
-
     },
     created_at: {
       type:'timestamp',
@@ -74,7 +43,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('students');
+  return db.dropTable('university_mails');
 };
 
 exports._meta = {

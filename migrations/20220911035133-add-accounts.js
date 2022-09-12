@@ -23,6 +23,24 @@ exports.up = function(db) {
       primaryKey: true, 
       autoIncrement: true,
     },
+    student_id: { 
+      type: 'int', 
+      notNull: true,
+      foreignKey: {
+        name: 'accounts_students_id_fk',
+        table: 'students',
+        rules: {
+          onDelete: 'CASCADE',
+          onUpdate: 'RESTRICT'
+        },
+        mapping: 'id'
+      }
+      
+    },
+    email: {
+      type:'string',
+      notNull: true,
+    },
     username: {
       type:'string',
       notNull: true,
@@ -32,16 +50,16 @@ exports.up = function(db) {
       notNull: true,
     },
     isVerified: {
-      type:'BOOLEAN',
-      notNull: false,
+      type:'boolean',
+      defaultValue:false,
     },
     verified_at:{
       type:'timestamp',
       timezone: true,
     },
     status: {
-      type:'BOOLEAN',
-      notNull: true,
+      type:'boolean',
+      defaultValue:true,
     },
     created_at: {
       type:'timestamp',

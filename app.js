@@ -1,25 +1,45 @@
-'use strict'
+"use strict";
 
-const path = require('path')
-const AutoLoad = require('@fastify/autoload')
+const path = require("path");
+const AutoLoad = require("@fastify/autoload");
 
+const fastifyEnv = require("@fastify/env");
+const schema = {
+  type: "object",
+  required: ["DATABASE_URL","EMAIL_HOST_USER","EMAIL_HOST_PASSWORD"],
+  properties: {
+    DATABASE_URL: {
+      type: "string",
+    },
+    EMAIL_HOST_USER: {
+      type: "string",
+    },
+    EMAIL_HOST_PASSWORD: {
+      type: "string",
+    },
+  },
+};
+const options = {
+  schema: schema,
+  dotenv: true,
+};
 module.exports = async function (fastify, opts) {
-  // Place here your custom code!
+  fastify.register(fastifyEnv, options).after((err) => {
+    if (err) {
+      console.log(err);
+      process.exit(1);
+    }
+    fastify.register(AutoLoad, {
+      dir: path.join(__dirname, "plugins"),
+      options: Object.assign({}, opts),
+    });
 
-  // Do not touch the following lines
-
-  // This loads all plugins defined in plugins
-  // those should be support plugins that are reused
-  // through your application
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'plugins'),
-    options: Object.assign({}, opts)
-  })
-
-  // This loads all plugins defined in routes
-  // define your routes in one of these
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
-    options: Object.assign({}, opts)
-  })
-}
+    // This loads all plugins defined in routes
+    // define your routes in one of these
+    fastify.register(AutoLoad, {
+      dir: path.join(__dirname, "routes"),
+      options: Object.assign({}, opts),
+      routeParams: true,
+    });
+  });
+};
