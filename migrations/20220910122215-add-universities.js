@@ -26,6 +26,7 @@ exports.up = function(db) {
     name: {
       type:'string',
       notNull: true,
+      unique:true,
     },
     created_at: {
       type:'timestamp',

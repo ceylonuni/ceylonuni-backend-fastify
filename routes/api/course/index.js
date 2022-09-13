@@ -45,16 +45,6 @@ module.exports = async function (fastify, opts) {
           },
           async (request, reply) => {
             try {
-      
-              // var item = await fastify.prisma.courses.findUnique({
-              //   where: {
-              //     name: request.body.name,
-              //   },
-              // });
-              // if (item) {
-              //   throw new Error("The course is alreday registered.");
-              // } else {
-                
                 var item = await fastify.prisma.courses.create({
                   data: {
                     name: request.body.name,
@@ -65,7 +55,6 @@ module.exports = async function (fastify, opts) {
 
                 ;
                 reply.send(item);
-              // }
               
             } catch (error) {
               reply.send(error);

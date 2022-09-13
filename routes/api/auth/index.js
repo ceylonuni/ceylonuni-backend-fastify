@@ -98,7 +98,6 @@ module.exports = async function (fastify, opts) {
   fastify.post(
     "/login",
     {
-     
       schema: {
         tags: ["Auth"],
         body: {
@@ -125,7 +124,10 @@ module.exports = async function (fastify, opts) {
           },
         });
         if (item) {
-          console.log(item);
+          if(item.deleted_at){
+            throw new Error("This account is deleted");
+          }
+          // console.log(item);
           let pass = request.body.password;
           let hash = item.password;
 
