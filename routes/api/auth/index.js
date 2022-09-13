@@ -98,7 +98,6 @@ module.exports = async function (fastify, opts) {
   fastify.post(
     "/login",
     {
-     
       schema: {
         tags: ["Auth"],
         body: {
@@ -137,13 +136,80 @@ module.exports = async function (fastify, opts) {
               id: item.id,
               student_id: item.student_id,
             });
-            reply.send(token);
+            reply.send({ token: token });
           } else {
-            reply.send("not ok");
+            reply.send("Email or Password wrong.");
           }
         } else {
           throw new Error("This email don't have an account");
         }
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.get(
+    "/validate-link",
+    {
+      preValidation: [fastify.verifyEmail],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Auth"],
+      },
+    },
+    async (request, reply) => {
+      try {
+        reply.send({ message: "Link is validate." });
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.get(
+    "/register",
+    {
+      preValidation: [fastify.verifyEmail],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Auth"],
+      },
+    },
+    async (request, reply) => {
+      try {
+        var items = {};
+        var courses = [];
+        var universityCourses =
+          await fastify.prisma.university_courses.findMany({
+            where: {
+              deleted_at: null,
+              university_id: request.user.university.id,
+            },
+            select: {
+              id: true,
+              courses: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          });
+
+        for (var key in universityCourses) {
+          var item = {};
+          item.university_course_id = universityCourses[key].id;
+          item.name = universityCourses[key].courses.name;
+          courses.push(item);
+        }
+        items.university = request.user.university.name;
+        items.email = request.user.email;
+        items.courses = courses;
+        reply.send(items);
       } catch (error) {
         reply.send(error);
       } finally {
