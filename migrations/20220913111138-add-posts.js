@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('universities', {
+  return db.createTable('posts', {
     id: { 
       type: 'int', 
       unsigned: true,
@@ -23,10 +23,37 @@ exports.up = function(db) {
       primaryKey: true, 
       autoIncrement: true,
     },
-    name: {
+    key: {
       type:'string',
       notNull: true,
       unique:true,
+    },
+    student_id: {
+      type:'int',
+      notNull: true,
+      foreignKey: {
+        name: 'posts_students_id_fk',
+        table: 'students',
+        rules: {
+          onDelete: 'CASCADE',
+          onUpdate: 'RESTRICT'
+        },
+        mapping: 'id'
+      }
+
+    },
+    text: {
+      type:'text',
+    },
+    video_url: {
+      type:'text',
+    },
+    image_url: {
+      type:'text',
+    },
+    like_count:{
+      type:'int',
+      default:0
     },
     created_at: {
       type:'timestamp',
@@ -44,7 +71,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('universities');
+  return db.dropTable('posts');
 };
 
 exports._meta = {

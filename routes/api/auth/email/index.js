@@ -23,7 +23,7 @@ module.exports = async function (fastify, opts) {
       try {
         var end_domin = request.body.email.split("@")[1];
         var items = [];
-        var message = { vaild: false, existing: false };
+        var message = { valid: false, existing: false };
         var item = await fastify.prisma.students.findUnique({
           where: {
             email: request.body.email,
@@ -40,12 +40,12 @@ module.exports = async function (fastify, opts) {
 
         if (item) {
           message.existing = true;
-          message.vaild = true;
+          message.valid = true;
         } else if (items.length == 0) {
-          message.vaild = false;
+          message.valid = false;
           message.existing = false;
         } else if (items.length != 0) {
-          message.vaild = true;
+          message.valid = true;
           message.existing = false;
         }
         reply.send(message);

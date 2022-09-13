@@ -79,7 +79,7 @@ module.exports = async function (fastify, opts) {
         var account = await fastify.prisma.accounts.create({
           data: {
             student_id: student.id,
-            username: request.body.first_name,
+            username: request.body.first_name+moment(),
             email: request.user.email,
             password: password,
             created_at: moment().toISOString(),
@@ -124,7 +124,10 @@ module.exports = async function (fastify, opts) {
           },
         });
         if (item) {
-          console.log(item);
+          if(item.deleted_at){
+            throw new Error("This account is deleted");
+          }
+          // console.log(item);
           let pass = request.body.password;
           let hash = item.password;
 
