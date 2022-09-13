@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 
 module.exports = async function (fastify, opts) {
   fastify.post(
-    "/check",
+    "/verify",
     {
       schema: {
         tags: ["Auth"],
@@ -23,14 +23,14 @@ module.exports = async function (fastify, opts) {
       try {
         var end_domin = request.body.email.split("@")[1];
         var items = [];
-        var message = {};
+        var message = { vaild: true, existing: true };
         var item = await fastify.prisma.students.findUnique({
           where: {
             email: request.body.email,
           },
         });
         if (item) {
-          throw new Error("This email is alreday taken.");
+          message.existing = true
         }
         items = await fastify.prisma.university_mails.findMany({
           where: {
@@ -41,7 +41,62 @@ module.exports = async function (fastify, opts) {
           },
         });
         if (items.length == 0) {
-          throw new Error("The mail you entered is not valid.");
+          message.vaild = false
+          message.existing = false
+        } else {
+          message.vaild = true
+          message.existing = true
+        }
+        reply.send(message);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.post(
+    "/send",
+    {
+      schema: {
+        tags: ["Auth"],
+        body: {
+          type: "object",
+          required: ["email"],
+          properties: {
+            email: {
+              type: "string",
+              default: "example@stu.kln.ac.lk",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var end_domin = request.body.email.split("@")[1];
+        var items = [];
+        var message = { vaild: true, existing: true };
+        var item = await fastify.prisma.students.findUnique({
+          where: {
+            email: request.body.email,
+          },
+        });
+        if (item) {
+          message.existing = true
+        }
+        items = await fastify.prisma.university_mails.findMany({
+          where: {
+            deleted_at: null,
+            email: {
+              endsWith: end_domin,
+            },
+          },
+        });
+        if (items.length == 0) {
+          message.vaild = false
+          message.existing = false
         } else {
           const token = fastify.jwt.sign({ email: request.body.email });
           let testAccount = await nodemailer.createTestAccount();
@@ -60,7 +115,7 @@ module.exports = async function (fastify, opts) {
             to: request.body.email, // list of receivers
             subject: "Ceylonuni", // Subject line
             text: "Email Verification", // plain text body
-            html: "ceylonuni.lk/register?token="+token,
+            html: "ceylonuni.lk/register?token=" + token,
           });
 
           transporter.sendMail(function (error, info) {
@@ -70,7 +125,7 @@ module.exports = async function (fastify, opts) {
               console.log("Email sent: " + info.response);
             }
           });
-          message.message = 'Verification link has been sent to your mail.';
+          message.message = "Verification link has been sent to your mail.";
         }
         reply.send(message);
       } catch (error) {
@@ -80,5 +135,4 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
-
 };

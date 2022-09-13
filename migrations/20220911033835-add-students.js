@@ -58,6 +58,12 @@ exports.up = function(db) {
       }
 
     },
+    friends: {
+      type:'text',
+    },
+    friend_requests: {
+      type:'text',
+    },
     created_at: {
       type:'timestamp',
       timezone: true,
