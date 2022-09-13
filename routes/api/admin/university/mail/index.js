@@ -34,11 +34,15 @@ module.exports = async function (fastify, opts) {
         tags: ["Admin"],
         body: {
           type: "object",
-          required: ["email"],
+          required: ["university_id","email"],
           properties: {
             email: {
               type: "string",
               default:"example@stu.kln.ac.lk"
+            },
+            university_id: {
+              type: "integer",
+              default:1
             },
           },
           // example: {
@@ -52,6 +56,7 @@ module.exports = async function (fastify, opts) {
         var item = await fastify.prisma.university_mails.create({
           data: {
             email: request.body.email,
+            university_id:request.body.university_id,
             created_at:moment().toISOString(),
             updated_at:moment().toISOString(),
           },

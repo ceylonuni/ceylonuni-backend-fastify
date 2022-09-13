@@ -26,6 +26,7 @@ model universities {
   updated_at         DateTime?            @db.Timestamptz(6)
   deleted_at         DateTime?            @db.Timestamptz(6)
   university_courses university_courses[]
+  university_mails   university_mails[]
 }
 
 model courses {
@@ -57,6 +58,8 @@ model students {
   email                String             @unique
   address              String
   university_course_id Int
+  friends              String?
+  friend_requests      String?
   created_at           DateTime?          @db.Timestamptz(6)
   updated_at           DateTime?          @db.Timestamptz(6)
   deleted_at           DateTime?          @db.Timestamptz(6)
@@ -67,7 +70,7 @@ model students {
 model accounts {
   id          Int       @id @default(autoincrement())
   student_id  Int
-  email       String    @db.VarChar
+  email       String    @unique @db.VarChar
   username    String    @db.VarChar
   password    String    @db.VarChar
   isVerified  Boolean?  @default(false)
@@ -80,9 +83,11 @@ model accounts {
 }
 
 model university_mails {
-  id         Int       @id @default(autoincrement())
-  email      String    @db.VarChar
-  created_at DateTime? @db.Timestamptz(6)
-  updated_at DateTime? @db.Timestamptz(6)
-  deleted_at DateTime? @db.Timestamptz(6)
+  id            Int          @id @default(autoincrement())
+  email         String       @db.VarChar
+  university_id Int
+  created_at    DateTime?    @db.Timestamptz(6)
+  updated_at    DateTime?    @db.Timestamptz(6)
+  deleted_at    DateTime?    @db.Timestamptz(6)
+  universities  universities @relation(fields: [university_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "university_courses_universities_id_fk")
 }

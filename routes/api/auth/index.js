@@ -72,19 +72,144 @@ module.exports = async function (fastify, opts) {
             updated_at: moment().toISOString(),
           },
         });
-        const salt = await bcrypt.genSalt(10);
-        const password = await bcrypt.hash(request.body.password, salt);
+        // const salt = await bcrypt.genSalt(10);
+        // const password = await bcrypt.hash(request.body.password, salt);
+
+        const password = await bcrypt.hash(request.body.password, 10);
         var account = await fastify.prisma.accounts.create({
           data: {
             student_id: student.id,
-            username:request.body.first_name,
+            username: request.body.first_name,
             email: request.user.email,
             password: password,
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
         });
-        reply.send({message:'success'});
+        reply.send({ message: "success" });
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.post(
+    "/login",
+    {
+      schema: {
+        tags: ["Auth"],
+        body: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email: {
+              type: "string",
+              default: "Last name",
+            },
+            password: {
+              type: "string",
+              default: "Password",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var item = await fastify.prisma.accounts.findUnique({
+          where: {
+            email: request.body.email,
+          },
+        });
+        if (item) {
+          console.log(item);
+          let pass = request.body.password;
+          let hash = item.password;
+
+          const result = await bcrypt.compare(pass, hash);
+
+          if (result) {
+            const token = fastify.jwt.sign({
+              email: item.email,
+              id: item.id,
+              student_id: item.student_id,
+            });
+            reply.send({ token: token });
+          } else {
+            reply.send("Email or Password wrong.");
+          }
+        } else {
+          throw new Error("This email don't have an account");
+        }
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.get(
+    "/validate-link",
+    {
+      preValidation: [fastify.verifyEmail],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Auth"],
+      },
+    },
+    async (request, reply) => {
+      try {
+        reply.send({ message: "Link is validate." });
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.get(
+    "/register",
+    {
+      preValidation: [fastify.verifyEmail],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Auth"],
+      },
+    },
+    async (request, reply) => {
+      try {
+        var items = {};
+        var courses = [];
+        var universityCourses =
+          await fastify.prisma.university_courses.findMany({
+            where: {
+              deleted_at: null,
+              university_id: request.user.university.id,
+            },
+            select: {
+              id: true,
+              courses: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          });
+
+        for (var key in universityCourses) {
+          var item = {};
+          item.university_course_id = universityCourses[key].id;
+          item.name = universityCourses[key].courses.name;
+          courses.push(item);
+        }
+        items.university = request.user.university.name;
+        items.email = request.user.email;
+        items.courses = courses;
+        reply.send(items);
       } catch (error) {
         reply.send(error);
       } finally {

@@ -40,6 +40,7 @@ exports.up = function(db) {
     email: {
       type:'string',
       notNull: true,
+      unique:true,
     },
     username: {
       type:'string',
