@@ -67,7 +67,7 @@ model students {
 model accounts {
   id          Int       @id @default(autoincrement())
   student_id  Int
-  email       String    @db.VarChar
+  email       String    @unique @db.VarChar
   username    String    @db.VarChar
   password    String    @db.VarChar
   isVerified  Boolean?  @default(false)
