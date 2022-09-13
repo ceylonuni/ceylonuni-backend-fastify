@@ -79,7 +79,7 @@ module.exports = async function (fastify, opts) {
         var account = await fastify.prisma.accounts.create({
           data: {
             student_id: student.id,
-            username: request.body.first_name,
+            username: request.body.first_name+moment(),
             email: request.user.email,
             password: password,
             created_at: moment().toISOString(),

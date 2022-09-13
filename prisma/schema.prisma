@@ -65,6 +65,8 @@ model students {
   deleted_at           DateTime?          @db.Timestamptz(6)
   university_courses   university_courses @relation(fields: [university_course_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "students_university_courses_id_fk")
   accounts             accounts[]
+  comments             comments[]
+  posts                posts[]
 }
 
 model accounts {
@@ -90,4 +92,32 @@ model university_mails {
   updated_at    DateTime?    @db.Timestamptz(6)
   deleted_at    DateTime?    @db.Timestamptz(6)
   universities  universities @relation(fields: [university_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "university_courses_universities_id_fk")
+}
+
+model comments {
+  id         Int       @id @default(autoincrement())
+  post_id    Int
+  student_id Int
+  text       String?
+  like_count Int?
+  created_at DateTime? @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  students   students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "posts_students_id_fk")
+  posts      posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "students_posts_id_fk")
+}
+
+model posts {
+  id         Int        @id @default(autoincrement())
+  key        String     @unique @db.VarChar
+  student_id Int
+  text       String?
+  video_url  String?
+  image_url  String?
+  like_count Int?
+  created_at DateTime?  @db.Timestamptz(6)
+  updated_at DateTime?  @db.Timestamptz(6)
+  deleted_at DateTime?  @db.Timestamptz(6)
+  students   students   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "posts_students_id_fk")
+  comments   comments[]
 }
