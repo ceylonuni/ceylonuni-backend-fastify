@@ -22,13 +22,8 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        //get friends posts
+        //convert to array
         var friends_id_array = JSON.parse(item.friends);
-        const results = await fastify.prisma.posts.findMany({
-          where: {
-            student_id: { in: friends_id_array },
-          },
-        });
 
         //get active friends ids
 
@@ -41,12 +36,20 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        let active_ids_array = active_ids.map(a => a.id);
+         //convert to array
+        var active_ids_array = active_ids.map((a) => a.id);
 
-        var last_array = friends_id_array.filter( function( el ) {
-            return active_ids.includes( el );
-          } );
-        reply.send(last_array);
+        //find active ads whithin friends list
+        var active_friends_id_array = active_ids_array.filter((element) =>
+          friends_id_array.includes(element)
+        );
+        //get active friends posts
+        const results = await fastify.prisma.posts.findMany({
+          where: {
+            student_id: { in: active_friends_id_array },
+          },
+        });
+        reply.send(results);
         // const myJSON = JSON.stringify(active_ids);
 
         // reply.send(results);
