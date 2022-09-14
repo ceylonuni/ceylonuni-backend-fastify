@@ -86,7 +86,14 @@ module.exports = async function (fastify, opts) {
             updated_at: moment().toISOString(),
           },
         });
-        reply.send({ message: "success" });
+
+        const token = fastify.jwt.sign({
+          email: account.email,
+          id: account.id,
+          student_id: account.student_id,
+        });
+
+        reply.send({ token: token, message: "success" });
       } catch (error) {
         reply.send(error);
       } finally {
