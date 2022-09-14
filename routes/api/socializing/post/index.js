@@ -55,4 +55,32 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+  //get all own posts
+  fastify.get(
+    "/all",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+      },
+    },
+    async (request, reply) => {
+      try {
+             
+        const results = await fastify.prisma.posts.findMany({
+          where: {
+            student_id: request.user.student_id,
+          },
+        });
+
+        reply.send(results);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
 };
