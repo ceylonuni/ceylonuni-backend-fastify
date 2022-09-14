@@ -27,7 +27,7 @@ exports.up = function(db) {
       type:'int',
       notNull: true,
       foreignKey: {
-        name: 'students_posts_id_fk',
+        name: 'comments_posts_id_fk',
         table: 'posts',
         rules: {
           onDelete: 'CASCADE',
@@ -41,7 +41,7 @@ exports.up = function(db) {
       type:'int',
       notNull: true,
       foreignKey: {
-        name: 'posts_students_id_fk',
+        name: 'comments_students_id_fk',
         table: 'students',
         rules: {
           onDelete: 'CASCADE',
