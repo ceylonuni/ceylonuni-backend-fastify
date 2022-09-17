@@ -1,6 +1,63 @@
 "use strict";
 const moment = require("moment");
 module.exports = async function (fastify, opts) {
+  fastify.get(
+    "/all",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+      },
+    },
+    async (request, reply) => {
+      try {
+        //get all friends ids
+        var item = await fastify.prisma.students.findUnique({
+          where: {
+            id: request.user.student_id,
+          },
+          select: {
+            friends: true,
+          },
+        });
+
+        var friends_ids = JSON.parse(item.friends);
+
+        const results = await fastify.prisma.students.findMany({
+          where: {
+            id: { in: friends_ids },
+            deleted_at: null,
+          },
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            university_courses: {
+              select: {
+                universities:{
+                  select:{
+                    name: true,
+                  },
+                },
+                courses:{
+                  select:{
+                    name: true,
+                  },
+                }
+              },
+            },
+          },
+        });
+        reply.send(results);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
   fastify.post(
     "/send-request",
     {
