@@ -87,6 +87,7 @@ module.exports = async function (fastify, opts) {
         if (item) {
           throw new Error("The mail you entered is not valid.");
         }
+
         items = await fastify.prisma.university_mails.findMany({
           where: {
             deleted_at: null,
@@ -98,6 +99,7 @@ module.exports = async function (fastify, opts) {
             universities:true
           }
         });
+        
         if (items.length == 0) {
           throw new Error("The mail you entered is not valid.");
         } else {
