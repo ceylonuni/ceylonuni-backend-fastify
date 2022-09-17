@@ -14,7 +14,7 @@ module.exports = async function (fastify, opts) {
       try {
         //get all friends ids
         var item = await fastify.prisma.students.findUnique({
-          where: {
+          where: {                                                            
             id: request.user.student_id,
           },
           select: {
@@ -29,8 +29,8 @@ module.exports = async function (fastify, opts) {
 
         //convert to array
 
-        var friends_ids = JSON.parse(item.friends); // [1, 2] type object
-
+        var friends_ids= JSON.parse(item.friends); // [1, 2] type object
+    
         //get active friends ids
 
         var active_ids = await fastify.prisma.students.findMany({
@@ -41,25 +41,29 @@ module.exports = async function (fastify, opts) {
             id: true,
           },
         });
-
+        
         //findMany method return array of objects
         //active_ids = [{"id": 2}, {  "id": 1}] type object
         //active_ids_array = [2,1] type object
-
-        var active_ids = active_ids.map((a) => a.id); //[2,1] type object
-
+ 
+        var active_ids= active_ids.map((a) => a.id); //[2,1] type object
+        
         //find active ads whithin friends list
-        var active_friends_ids = active_ids.filter(
-          (
-            element //active_friend_ids contains all active friends for the user
-          ) => friends_ids.includes(element)
+        var active_friends_ids= active_ids.filter((element) => //active_friend_ids contains all active friends for the user
+          friends_ids.includes(element)
         );
+        
+        
+        //add user id to ids list
+       
+        var all_ids = active_friends_ids //all_ids contain all active friend ids and own id
+        all_ids.push(request.user.student_id)
+        // reply.send(all_ids)
 
-
-        //get active friends posts 
+        //get active friends posts and own
         const results = await fastify.prisma.posts.findMany({
           where: {
-            student_id: { in: active_friends_ids },
+            student_id: { in: all_ids },
           },
         });
         reply.send(results);
