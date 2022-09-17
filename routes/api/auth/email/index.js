@@ -115,7 +115,7 @@ module.exports = async function (fastify, opts) {
             },
           });
 
-          var link = "ceylonuni.lk/register?token=" + token
+          var link = "http://localhost:8080/register?token=" + token
           // send mail with defined transport object
           let info = await transporter.sendMail({
             from: '"Ceylonuni" <test@ceylonuni.com>', // sender address
@@ -123,14 +123,6 @@ module.exports = async function (fastify, opts) {
             subject: "Ceylonuni", // Subject line
             text: "Email Verification", // plain text body
             html: "<a href="+link+">Click Here to verify</a>"
-          });
-
-          transporter.sendMail(function (error, info) {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log("Email sent: " + info.response);
-            }
           });
           message.message = "Verification link has been sent to your mail.";
         }
