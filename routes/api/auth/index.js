@@ -227,4 +227,187 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+
+  fastify.post(
+    "/password-reset",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: "object",
+          required: ["email", "old_password", "new_password"],
+          properties: {
+            email: {
+              type: "string",
+              default: "email",
+            },
+            old_password: {
+              type: "string",
+              default: "Password 1",
+            },
+            new_password: {
+              type: "string",
+              default: "Password 2",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+
+      try {
+        var item = await fastify.prisma.accounts.findUnique({
+          where: {
+            email: request.body.email,
+          },
+        });
+
+        
+          let pass = request.body.old_password;
+          let hash = item.password;
+
+          const result = await bcrypt.compare(pass, hash);
+
+          if (result) {
+            const hashed_password = await bcrypt.hash(request.body.new_password, 10);
+            var item = await fastify.prisma.accounts.update({
+              where: {
+                email: request.body.email,
+              },
+              data: {
+                password: hashed_password,
+                updated_at:moment().toISOString(),
+                
+              },
+            });
+            reply.send("Password updated successfully")
+           
+          } else {
+            reply.send("Email or Password wrong.")
+          }
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.post(
+    "/send-reset-email",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: "object",
+          properties: {
+            email: {
+              type: "string",
+              default: "example@stu.kln.ac.lk",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        
+        const token = fastify.jwt.sign({
+          email: request.body.email,
+          
+        });
+
+        let testAccount = await nodemailer.createTestAccount();
+        let transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            auth: {
+              user: fastify.config.EMAIL_HOST_USER,
+              pass: fastify.config.EMAIL_HOST_PASSWORD,
+            },
+        });
+
+          var link = "ceylonuni.lk/reset password?token=" + token
+          // send mail with defined transport object
+          let info = await transporter.sendMail({
+            from: '"Ceylonuni" <test@ceylonuni.com>', // sender address
+            to: request.body.email, // list of receivers
+            subject: "Ceylonuni Email Reset", // Subject line
+            text: "Email Verification", // plain text body
+            html:"<p>Click Here to verify "+token+"</p>"
+            
+          });
+
+          transporter.sendMail(function (error, info) {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log("Email sent: " + info.response);
+            }
+          });
+          // message.message = "Verification link has been sent to your mail.";
+        
+        reply.send(token);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.post(
+    "/forgot-password-reset",
+    {
+      preValidation: [fastify.verifyEmail],
+      schema: {
+        tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: "object",
+          required: ["email", "new_password"],
+          properties: {
+            email: {
+              type: "string",
+              default: "email",
+            },
+            new_password: {
+              type: "string",
+              default: "Password",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+
+      try {
+      
+        const hashed_password = await bcrypt.hash(request.body.new_password, 10);
+        var item = await fastify.prisma.accounts.update({
+              where: {
+                email: request.body.email,
+              },
+              data: {
+                password: hashed_password,
+                updated_at:moment().toISOString(),
+                
+              },
+        });
+        reply.send("New password updated successfully")  
+          
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+
 };
