@@ -6,7 +6,7 @@ const AutoLoad = require("@fastify/autoload");
 const fastifyEnv = require("@fastify/env");
 const schema = {
   type: "object",
-  required: ["DATABASE_URL","EMAIL_HOST_USER","EMAIL_HOST_PASSWORD"],
+  required: ["DATABASE_URL","EMAIL_HOST_USER","EMAIL_HOST_PASSWORD","CLOULD_API_SECRET","CLOULD_API_KEY","CLOULD_NAME"],
   properties: {
     DATABASE_URL: {
       type: "string",
@@ -15,6 +15,15 @@ const schema = {
       type: "string",
     },
     EMAIL_HOST_PASSWORD: {
+      type: "string",
+    },
+    CLOULD_API_SECRET: {
+      type: "string",
+    },
+    CLOULD_API_KEY: {
+      type: "string",
+    },
+    CLOULD_NAME: {
       type: "string",
     },
   },

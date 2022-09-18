@@ -1,7 +1,8 @@
 "use strict";
 
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const moment = require("moment");
+
 module.exports = async function (fastify, opts) {
   fastify.post(
     "/add",
@@ -35,14 +36,23 @@ module.exports = async function (fastify, opts) {
         ) {
           throw new Error("Body should be have at lest one content.");
         }
+        var image_url = null
+        var key = uuidv4()
+        if(request.body.image_url){
+          image_url = await fastify.image.upload({
+            image_url: request.body.image_url,
+            key:key,
+          })  
+        }
+        
         var post = await fastify.prisma.posts.create({
           data: {
-            student_id:request.user.student_id,
-            key: uuidv4(),
-            text:request.body.text,
-            image_url:request.body.image_url,
-            video_url:request.body.video_url,
-            like_count:0,
+            student_id: request.user.student_id,
+            key: key,
+            text: request.body.text,
+            image_url: image_url,
+            video_url: request.body.video_url,
+            like_count: 0,
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
@@ -67,7 +77,6 @@ module.exports = async function (fastify, opts) {
     },
     async (request, reply) => {
       try {
-             
         const results = await fastify.prisma.posts.findMany({
           where: {
             student_id: request.user.student_id,
@@ -82,5 +91,4 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
-
 };

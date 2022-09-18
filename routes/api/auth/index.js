@@ -68,6 +68,8 @@ module.exports = async function (fastify, opts) {
             address: request.body.address,
             email: request.user.email,
             university_course_id: request.body.university_course_id,
+            friends:"[]",
+            friend_requests:"[]",
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },

@@ -63,6 +63,9 @@ module.exports = async function (fastify, opts) {
               }
             }
           },
+          orderBy:{
+            id:'desc'
+          }
         });
         reply.send(results);
       } catch (error) {

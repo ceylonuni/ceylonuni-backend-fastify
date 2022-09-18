@@ -115,7 +115,7 @@ module.exports = async function (fastify, opts) {
             },
           });
 
-          var link = "http://localhost:8080/register?token=" + token
+          var link = "http://localhost:8080/entry/register?token=" + token
           // send mail with defined transport object
           let info = await transporter.sendMail({
             from: '"Ceylonuni" <test@ceylonuni.com>', // sender address

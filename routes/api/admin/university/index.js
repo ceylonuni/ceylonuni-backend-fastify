@@ -45,14 +45,6 @@ module.exports = async function (fastify, opts) {
           async (request, reply) => {
             try {
               
-              var item = await fastify.prisma.universities.findUnique({
-                where: {
-                  name: request.body.name,
-                },
-              });
-              if (item) {
-                throw new Error("The university is alreday registered.");
-              } else {
                 
                 var item = await fastify.prisma.universities.create({
                   data: {
@@ -64,7 +56,6 @@ module.exports = async function (fastify, opts) {
 
                 ;
                 reply.send(item);
-              }
               
             } catch (error) {
               reply.send(error);
