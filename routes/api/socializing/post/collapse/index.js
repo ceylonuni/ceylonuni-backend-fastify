@@ -81,6 +81,7 @@ module.exports = async function (fastify, opts) {
               select:{
                 students: {
                   select: {
+                    id:true,
                     first_name: true,
                     last_name:true,
                     image_url: true,
