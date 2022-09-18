@@ -131,4 +131,55 @@ module.exports = async function (fastify, opts) {
     }
   );
 
+  fastify.post(
+    "/image-upload",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: "object",
+          properties: {
+            image: {
+              type: "string",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+
+      try {
+        var student = await fastify.prisma.students.findUnique({
+          where: {
+            id: request.user.id,
+          },
+        });
+        var image_url = null
+        if(request.body.image){
+          image_url = await fastify.image.upload({
+            image_url: request.body.image,
+            key:student.id+'_'+student.first_name,
+          })  
+        }
+        var item = await fastify.prisma.students.update({
+            where: {
+              id: request.user.id,
+            },
+            data: {
+              image_url: image_url,
+              updated_at:moment().toISOString(),
+            },
+          });
+          
+        reply.send(item);
+
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
 };
