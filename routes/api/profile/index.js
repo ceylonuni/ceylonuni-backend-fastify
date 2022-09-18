@@ -25,7 +25,7 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        reply.send(item);
+        reply.send(item[0]);
       } catch (error) {
         reply.send(error);
       } finally {
