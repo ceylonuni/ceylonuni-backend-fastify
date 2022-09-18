@@ -64,6 +64,9 @@ exports.up = function(db) {
     friend_requests: {
       type:'text',
     },
+    image_url: {
+      type:'text',
+    },
     created_at: {
       type:'timestamp',
       timezone: true,

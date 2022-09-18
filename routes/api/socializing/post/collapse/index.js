@@ -41,7 +41,7 @@ module.exports = async function (fastify, opts) {
 
         friends_ids.push(request.user.student_id);
         // reply.send(all_ids)
-        console.log(request.user.student_id,friends_ids)
+        console.log(request.user.student_id, friends_ids);
 
         //get active friends posts and own
         const results = await fastify.prisma.posts.findMany({
@@ -57,15 +57,41 @@ module.exports = async function (fastify, opts) {
             video_url: true,
             like_count: true,
             created_at: true,
-            students:{
+            students: {
+              select: {
+                first_name: true,
+                last_name:true,
+                image_url: true,
+              },
+            },
+            comments:{
               select:{
-                first_name:true
+                text:true,
+                created_at:true,
+                students: {
+                  select: {
+                    first_name: true,
+                    last_name:true,
+                    image_url: true,
+                  },
+                },
+              }
+            },
+            likes:{
+              select:{
+                students: {
+                  select: {
+                    first_name: true,
+                    last_name:true,
+                    image_url: true,
+                  },
+                },
               }
             }
           },
-          orderBy:{
-            id:'desc'
-          }
+          orderBy: {
+            id: "desc",
+          },
         });
         reply.send(results);
       } catch (error) {
