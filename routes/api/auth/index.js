@@ -68,8 +68,8 @@ module.exports = async function (fastify, opts) {
             address: request.body.address,
             email: request.user.email,
             university_course_id: request.body.university_course_id,
-            friends:"[]",
-            friend_requests:"[]",
+            friends: "[]",
+            friend_requests: "[]",
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
@@ -81,7 +81,7 @@ module.exports = async function (fastify, opts) {
         var account = await fastify.prisma.accounts.create({
           data: {
             student_id: student.id,
-            username: request.body.first_name+moment(),
+            username: request.body.first_name + moment(),
             email: request.user.email,
             password: password,
             created_at: moment().toISOString(),
@@ -94,8 +94,11 @@ module.exports = async function (fastify, opts) {
           id: account.id,
           student_id: account.student_id,
         });
-
-        reply.send({ token: token, message: "success" });
+        var account = {};
+        account.id = student.id;
+        account.first_name = student.first_name;
+        account.last_name = student.last_name;
+        reply.send({ token: token, student: account });
       } catch (error) {
         reply.send(error);
       } finally {
@@ -133,7 +136,7 @@ module.exports = async function (fastify, opts) {
           },
         });
         if (item) {
-          if(item.deleted_at){
+          if (item.deleted_at) {
             throw new Error("This account is deleted");
           }
           // console.log(item);
@@ -148,7 +151,16 @@ module.exports = async function (fastify, opts) {
               id: item.id,
               student_id: item.student_id,
             });
-            reply.send({ token: token });
+            var student = await fastify.prisma.students.findUnique({
+              where: {
+                id: item.student_id,
+              },
+            });
+            var account = {};
+            account.id = item.student_id;
+            account.first_name = student.first_name;
+            account.last_name = student.last_name;
+            reply.send({ token: token, student: account });
           } else {
             reply.send("Email or Password wrong.");
           }
@@ -258,7 +270,6 @@ module.exports = async function (fastify, opts) {
       },
     },
     async (request, reply) => {
-
       try {
         var item = await fastify.prisma.accounts.findUnique({
           where: {
@@ -266,29 +277,29 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        
-          let pass = request.body.old_password;
-          let hash = item.password;
+        let pass = request.body.old_password;
+        let hash = item.password;
 
-          const result = await bcrypt.compare(pass, hash);
+        const result = await bcrypt.compare(pass, hash);
 
-          if (result) {
-            const hashed_password = await bcrypt.hash(request.body.new_password, 10);
-            var item = await fastify.prisma.accounts.update({
-              where: {
-                email: request.body.email,
-              },
-              data: {
-                password: hashed_password,
-                updated_at:moment().toISOString(),
-                
-              },
-            });
-            reply.send("Password updated successfully")
-           
-          } else {
-            reply.send("Email or Password wrong.")
-          }
+        if (result) {
+          const hashed_password = await bcrypt.hash(
+            request.body.new_password,
+            10
+          );
+          var item = await fastify.prisma.accounts.update({
+            where: {
+              email: request.body.email,
+            },
+            data: {
+              password: hashed_password,
+              updated_at: moment().toISOString(),
+            },
+          });
+          reply.send("Password updated successfully");
+        } else {
+          reply.send("Email or Password wrong.");
+        }
       } catch (error) {
         reply.send(error);
       } finally {
@@ -317,43 +328,40 @@ module.exports = async function (fastify, opts) {
     },
     async (request, reply) => {
       try {
-        
         const token = fastify.jwt.sign({
           email: request.body.email,
-          
         });
 
         let testAccount = await nodemailer.createTestAccount();
         let transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-              user: fastify.config.EMAIL_HOST_USER,
-              pass: fastify.config.EMAIL_HOST_PASSWORD,
-            },
+          host: "smtp.gmail.com",
+          port: 587,
+          secure: false, // true for 465, false for other ports
+          auth: {
+            user: fastify.config.EMAIL_HOST_USER,
+            pass: fastify.config.EMAIL_HOST_PASSWORD,
+          },
         });
 
-          var link = "ceylonuni.lk/reset password?token=" + token
-          // send mail with defined transport object
-          let info = await transporter.sendMail({
-            from: '"Ceylonuni" <test@ceylonuni.com>', // sender address
-            to: request.body.email, // list of receivers
-            subject: "Ceylonuni Email Reset", // Subject line
-            text: "Email Verification", // plain text body
-            html:"<p>Click Here to verify "+token+"</p>"
-            
-          });
+        var link = "ceylonuni.lk/reset password?token=" + token;
+        // send mail with defined transport object
+        let info = await transporter.sendMail({
+          from: '"Ceylonuni" <test@ceylonuni.com>', // sender address
+          to: request.body.email, // list of receivers
+          subject: "Ceylonuni Email Reset", // Subject line
+          text: "Email Verification", // plain text body
+          html: "<p>Click Here to verify " + token + "</p>",
+        });
 
-          transporter.sendMail(function (error, info) {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log("Email sent: " + info.response);
-            }
-          });
-          // message.message = "Verification link has been sent to your mail.";
-        
+        transporter.sendMail(function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
+        // message.message = "Verification link has been sent to your mail.";
+
         reply.send(token);
       } catch (error) {
         reply.send(error);
@@ -387,22 +395,21 @@ module.exports = async function (fastify, opts) {
       },
     },
     async (request, reply) => {
-
       try {
-      
-        const hashed_password = await bcrypt.hash(request.body.new_password, 10);
+        const hashed_password = await bcrypt.hash(
+          request.body.new_password,
+          10
+        );
         var item = await fastify.prisma.accounts.update({
-              where: {
-                email: request.body.email,
-              },
-              data: {
-                password: hashed_password,
-                updated_at:moment().toISOString(),
-                
-              },
+          where: {
+            email: request.body.email,
+          },
+          data: {
+            password: hashed_password,
+            updated_at: moment().toISOString(),
+          },
         });
-        reply.send("New password updated successfully")  
-          
+        reply.send("New password updated successfully");
       } catch (error) {
         reply.send(error);
       } finally {
@@ -410,6 +417,4 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
-
-
 };
