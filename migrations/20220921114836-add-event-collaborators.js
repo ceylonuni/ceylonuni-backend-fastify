@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('posts', {
+  return db.createTable('event-collaborators', {
     id: { 
       type: 'int', 
       unsigned: true,
@@ -23,16 +23,11 @@ exports.up = function(db) {
       primaryKey: true, 
       autoIncrement: true,
     },
-    key: {
-      type:'string',
-      notNull: true,
-      unique:true,
-    },
     student_id: {
       type:'int',
       notNull: true,
       foreignKey: {
-        name: 'posts_students_id_fk',
+        name: 'events_students_id_fk',
         table: 'students',
         rules: {
           onDelete: 'CASCADE',
@@ -42,28 +37,26 @@ exports.up = function(db) {
       }
 
     },
-    text: {
-      type:'text',
-    },
-    video_url: {
-      type:'text',
-    },
-    image_url: {
-      type:'text',
-    },
     event_id: {
-      type: "int",
-      notNull: false,
+      type:'int',
+      notNull: true,
       foreignKey: {
-        name: "colloborators_events_id_fk",
-        table: "events",
+        name: 'colloborators_events_id_fk',
+        table: 'events',
         rules: {
-          onDelete: "CASCADE",
-          onUpdate: "RESTRICT",
+          onDelete: 'CASCADE',
+          onUpdate: 'RESTRICT'
         },
-        mapping: "id",
-      },
+        mapping: 'id'
+      }
+
+    }, 
+
+    accepted_at: {
+      type:'timestamp',
+      timezone: true,
     },
+   
     created_at: {
       type:'timestamp',
       timezone: true,
@@ -80,7 +73,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('posts');
+  return db.dropTable('events');
 };
 
 exports._meta = {

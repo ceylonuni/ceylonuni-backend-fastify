@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('posts', {
+  return db.createTable('events', {
     id: { 
       type: 'int', 
       unsigned: true,
@@ -23,16 +23,15 @@ exports.up = function(db) {
       primaryKey: true, 
       autoIncrement: true,
     },
-    key: {
+    name: {
       type:'string',
       notNull: true,
-      unique:true,
     },
     student_id: {
       type:'int',
       notNull: true,
       foreignKey: {
-        name: 'posts_students_id_fk',
+        name: 'events_students_id_fk',
         table: 'students',
         rules: {
           onDelete: 'CASCADE',
@@ -42,27 +41,34 @@ exports.up = function(db) {
       }
 
     },
-    text: {
-      type:'text',
-    },
-    video_url: {
-      type:'text',
-    },
+    collaborator_id: {
+      type:'int',
+      notNull: true,
+      foreignKey: {
+        name: 'events_collaborator_id_fk',
+        table: 'students',
+        rules: {
+          onDelete: 'CASCADE',
+          onUpdate: 'RESTRICT'
+        },
+        mapping: 'id'
+      }
+
+    }, 
     image_url: {
       type:'text',
     },
-    event_id: {
-      type: "int",
-      notNull: false,
-      foreignKey: {
-        name: "colloborators_events_id_fk",
-        table: "events",
-        rules: {
-          onDelete: "CASCADE",
-          onUpdate: "RESTRICT",
-        },
-        mapping: "id",
-      },
+    start_at: {
+      type:'timestamp',
+      timezone: true,
+    },
+    end_at: {
+      type:'timestamp',
+      timezone: true,
+    },
+    venue: {
+      type:'string',
+      notNull: true,
     },
     created_at: {
       type:'timestamp',
@@ -80,7 +86,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('posts');
+  return db.dropTable('events');
 };
 
 exports._meta = {
