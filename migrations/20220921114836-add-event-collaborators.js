@@ -15,7 +15,7 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('event-collaborators', {
+  return db.createTable('event_collaborators', {
     id: { 
       type: 'int', 
       unsigned: true,
@@ -73,7 +73,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('events');
+  return db.dropTable('event_collaborators');
 };
 
 exports._meta = {

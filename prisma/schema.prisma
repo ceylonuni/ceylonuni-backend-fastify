@@ -51,28 +51,28 @@ model university_courses {
 }
 
 model students {
-  id                                      Int                   @id @default(autoincrement())
-  first_name                              String                @db.VarChar
-  last_name                               String                @db.VarChar
-  mobile                                  String
-  email                                   String                @unique
-  address                                 String
-  university_course_id                    Int
-  friends                                 String?
-  friend_requests                         String?
-  image_url                               String?
-  created_at                              DateTime?             @db.Timestamptz(6)
-  updated_at                              DateTime?             @db.Timestamptz(6)
-  deleted_at                              DateTime?             @db.Timestamptz(6)
-  university_courses                      university_courses    @relation(fields: [university_course_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "students_university_courses_id_fk")
-  accounts                                accounts[]
-  comments                                comments[]
-  event_collaborators                     event_collaborators[]
-  events_events_collaborator_idTostudents events[]              @relation("events_collaborator_idTostudents")
-  events_events_student_idTostudents      events[]              @relation("events_student_idTostudents")
-  likes                                   likes[]
-  participants                            participants[]
-  posts                                   posts[]
+  id                                 Int                   @id @default(autoincrement())
+  first_name                         String                @db.VarChar
+  last_name                          String                @db.VarChar
+  mobile                             String
+  email                              String                @unique
+  address                            String
+  university_course_id               Int
+  friends                            String?
+  friend_requests                    String?
+  collaborator_request               String?
+  image_url                          String?
+  created_at                         DateTime?             @db.Timestamptz(6)
+  updated_at                         DateTime?             @db.Timestamptz(6)
+  deleted_at                         DateTime?             @db.Timestamptz(6)
+  university_courses                 university_courses    @relation(fields: [university_course_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "students_university_courses_id_fk")
+  accounts                           accounts[]
+  comments                           comments[]
+  event_collaborators                event_collaborators[]
+  events_events_student_idTostudents events[]              @relation("events_student_idTostudents")
+  likes                              likes[]
+  participants                       participants[]
+  posts                              posts[]
 }
 
 model accounts {
@@ -153,27 +153,24 @@ model event_collaborators {
   deleted_at  DateTime? @db.Timestamptz(6)
   events      events    @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "colloborators_events_id_fk")
   students    students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_students_id_fk")
-
-  @@map("event-collaborators")
 }
 
 model events {
-  id                                        Int                   @id @default(autoincrement())
-  name                                      String                @db.VarChar
-  student_id                                Int
-  collaborator_id                           Int
-  image_url                                 String?
-  start_at                                  DateTime?             @db.Timestamptz(6)
-  end_at                                    DateTime?             @db.Timestamptz(6)
-  venue                                     String                @db.VarChar
-  created_at                                DateTime?             @db.Timestamptz(6)
-  updated_at                                DateTime?             @db.Timestamptz(6)
-  deleted_at                                DateTime?             @db.Timestamptz(6)
-  students_events_collaborator_idTostudents students              @relation("events_collaborator_idTostudents", fields: [collaborator_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_collaborator_id_fk")
-  students_events_student_idTostudents      students              @relation("events_student_idTostudents", fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_students_id_fk")
-  event_collaborators                       event_collaborators[]
-  participants                              participants[]
-  posts                                     posts[]
+  id                                   Int                   @id @default(autoincrement())
+  name                                 String                @db.VarChar
+  key                                  String                @unique @db.VarChar
+  student_id                           Int
+  image_url                            String?
+  start_at                             DateTime              @db.Timestamptz(6)
+  end_at                               DateTime              @db.Timestamptz(6)
+  venue                                String                @db.VarChar
+  created_at                           DateTime?             @db.Timestamptz(6)
+  updated_at                           DateTime?             @db.Timestamptz(6)
+  deleted_at                           DateTime?             @db.Timestamptz(6)
+  students_events_student_idTostudents students              @relation("events_student_idTostudents", fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_students_id_fk")
+  event_collaborators                  event_collaborators[]
+  participants                         participants[]
+  posts                                posts[]
 }
 
 model participants {

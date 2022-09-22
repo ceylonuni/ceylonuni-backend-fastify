@@ -70,6 +70,7 @@ module.exports = async function (fastify, opts) {
             university_course_id: request.body.university_course_id,
             friends: "[]",
             friend_requests: "[]",
+            collaborator_request: "[]",
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },

@@ -52,7 +52,6 @@ module.exports = async function (fastify, opts) {
             text: request.body.text,
             image_url: image_url,
             video_url: request.body.video_url,
-            like_count: 0,
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
