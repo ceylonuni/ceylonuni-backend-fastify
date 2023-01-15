@@ -55,7 +55,6 @@ module.exports = async function (fastify, opts) {
             text: true,
             image_url: true,
             video_url: true,
-            like_count: true,
             created_at: true,
             students: {
               select: {
