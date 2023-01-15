@@ -9,24 +9,17 @@ module.exports = fp(async function(fastify, opts) {
     exposeRoute: true,
     openapi: {
       info: {
-        title: 'Ceylonuni API',
+        title: 'Ceylonuni Socializing Service API',
         version: pack.version,
       },
-      tags: [{
-          "name": "Test",
-          "description": "For test",
-        },
-        {
-          "name": "Admin",
-          "description": "For Admin Use",
-        },
-        {
-          "name": "Auth",
-          "description": "For Auth Use",
-        },
+      tags: [
         {
           "name": "Socializing",
           "description": "For Socializing Use",
+        },
+        {
+          "name": "General",
+          "description": "For General Use",
         },
       ],
       components: {
