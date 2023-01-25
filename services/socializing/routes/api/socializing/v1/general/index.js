@@ -93,6 +93,7 @@ module.exports = async function (fastify, opts) {
             last_name: true,
             friends:true,
             friend_requests: true,
+            send_requests:true,
             image_url:true,
             university_courses: {
               select: {
@@ -123,4 +124,113 @@ module.exports = async function (fastify, opts) {
     }
   );
 
+  fastify.get(
+    "/students",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+      },
+    },
+    async (request, reply) => {
+      try {
+        //get all students ids
+
+        const results = await fastify.prisma.students.findMany({
+          where: {
+            deleted_at: null,
+          },
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            friends:true,
+            friend_requests: true,
+            send_requests:true,
+            image_url:true,
+            university_courses: {
+              select: {
+                universities: {
+                  select: {
+                    name: true,
+                  },
+                },
+                courses: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        reply.send(results);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.get(
+    "/requests",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+      },
+    },
+    async (request, reply) => {
+      try {
+       //get all student ids
+       var item = await fastify.prisma.students.findUnique({
+        where: {
+          id: request.user.student_id,
+        },
+        select: {
+          friend_requests: true,
+        },
+      });
+
+      var student_ids = JSON.parse(item.friend_requests);
+        const results = await fastify.prisma.students.findMany({
+          where: {
+            id: { in: student_ids },
+            deleted_at: null,
+          },
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            friends:true,
+            friend_requests: true,
+            send_requests:true,
+            image_url:true,
+            university_courses: {
+              select: {
+                universities: {
+                  select: {
+                    name: true,
+                  },
+                },
+                courses: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        reply.send(results);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
 };

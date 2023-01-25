@@ -71,6 +71,7 @@ module.exports = async function (fastify, opts) {
             friends: "[]",
             friend_requests: "[]",
             collaborator_request: "[]",
+            send_requests: "[]",
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },

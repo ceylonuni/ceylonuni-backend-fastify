@@ -80,6 +80,7 @@ module.exports = async function (fastify, opts) {
       try {
 
         var my_friends = [];
+        var send_requests = [];
         var friend_friends = [];
         var friend_friend_requests = [];
 
@@ -90,6 +91,7 @@ module.exports = async function (fastify, opts) {
             },
             select: {
               friends: true,
+              send_requests: true,
             },
           });
 
@@ -107,6 +109,7 @@ module.exports = async function (fastify, opts) {
           my_friends = JSON.parse(student.friends)
           friend_friends =JSON.parse(friend.friends)
           friend_friend_requests = JSON.parse(friend.friend_requests)
+          send_requests = JSON.parse(student.send_requests)
 
         //check already in my_friends 
         const isInArray = my_friends.includes(request.body.student_id);
@@ -130,12 +133,23 @@ module.exports = async function (fastify, opts) {
         
       
         friend_friend_requests.push(request.user.student_id)
+        send_requests.push(request.body.student_id)
         var friend = await fastify.prisma.students.update({
             where: {
               id: request.body.student_id,
             },
             data: {
               friend_requests: JSON.stringify(friend_friend_requests),
+              updated_at: moment().toISOString(),
+            },
+          });
+
+          var me = await fastify.prisma.students.update({
+            where: {
+              id: request.user.student_id,
+            },
+            data: {
+              send_requests: JSON.stringify(send_requests),
               updated_at: moment().toISOString(),
             },
           });
@@ -200,6 +214,7 @@ module.exports = async function (fastify, opts) {
         var my_friends = [];
         var friend_friends = [];
         var friend_requests = [];
+        var send_requests = [];
 
         var user = await fastify.prisma.students.findUnique({
           where: {
@@ -217,6 +232,7 @@ module.exports = async function (fastify, opts) {
           },
           select: {
             friends: true,
+            send_requests: true,
           },
         });
 
@@ -225,6 +241,7 @@ module.exports = async function (fastify, opts) {
         friend_requests = JSON.parse(user.friend_requests);
         my_friends = JSON.parse(user.friends);
         friend_friends = JSON.parse(friend.friends);
+        send_requests = JSON.parse(friend.send_requests);
         
         //check already friends
         const isInArray = my_friends.includes(request.body.student_id);
@@ -239,6 +256,12 @@ module.exports = async function (fastify, opts) {
         if (index > -1) {
           friend_requests.splice(index, 1); // 2nd parameter means remove one item only
         }
+
+         //remove id from send request 
+         const indexRequest = send_requests.indexOf(request.user.student_id);
+         if (index > -1) {
+           send_requests.splice(indexRequest, 1); // 2nd parameter means remove one item only
+         }
 
         await fastify.prisma.students.update({
             where: {
@@ -258,6 +281,7 @@ module.exports = async function (fastify, opts) {
             },
             data: {
               friends: JSON.stringify(friend_friends),
+              send_requests: JSON.stringify(send_requests),
               updated_at: moment().toISOString(),
             },
           });

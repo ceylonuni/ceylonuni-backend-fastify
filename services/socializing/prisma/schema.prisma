@@ -60,6 +60,7 @@ model students {
   university_course_id               Int
   friends                            String?
   friend_requests                    String?
+  send_requests                      String?
   collaborator_request               String?
   image_url                          String?
   created_at                         DateTime?             @db.Timestamptz(6)
