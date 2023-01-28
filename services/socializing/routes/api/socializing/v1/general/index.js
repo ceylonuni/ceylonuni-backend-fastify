@@ -39,6 +39,11 @@ module.exports = async function (fastify, opts) {
                 first_name: true,
                 last_name:true,
                 image_url: true,
+                accounts:{
+                  select:{
+                    username:true,
+                  }
+                }
               },
             },
             comments:{
@@ -95,6 +100,11 @@ module.exports = async function (fastify, opts) {
             friend_requests: true,
             send_requests:true,
             image_url:true,
+            accounts:{
+              select:{
+                username: true,
+              }
+            },
             university_courses: {
               select: {
                 universities: {
@@ -149,6 +159,11 @@ module.exports = async function (fastify, opts) {
             friend_requests: true,
             send_requests:true,
             image_url:true,
+            accounts:{
+              select:{
+                username: true,
+              }
+            },
             university_courses: {
               select: {
                 universities: {
@@ -209,6 +224,11 @@ module.exports = async function (fastify, opts) {
             friend_requests: true,
             send_requests:true,
             image_url:true,
+            accounts:{
+              select:{
+                username: true,
+              }
+            },
             university_courses: {
               select: {
                 universities: {

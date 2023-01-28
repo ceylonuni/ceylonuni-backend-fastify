@@ -80,7 +80,7 @@ model accounts {
   id          Int       @id @default(autoincrement())
   student_id  Int
   email       String    @unique @db.VarChar
-  username    String    @db.VarChar
+  username    String    @unique @db.VarChar
   password    String    @db.VarChar
   isVerified  Boolean?  @default(false)
   verified_at DateTime? @db.Timestamptz(6)

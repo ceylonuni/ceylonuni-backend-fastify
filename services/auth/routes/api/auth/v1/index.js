@@ -1,7 +1,6 @@
 "use strict";
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
-
 const moment = require("moment");
 module.exports = async function (fastify, opts) {
   fastify.post(
@@ -100,6 +99,7 @@ module.exports = async function (fastify, opts) {
         account.id = student.id;
         account.first_name = student.first_name;
         account.last_name = student.last_name;
+        account.username = account.username
         reply.send({ token: token, student: account });
       } catch (error) {
         reply.send(error);
@@ -162,6 +162,7 @@ module.exports = async function (fastify, opts) {
             account.id = item.student_id;
             account.first_name = student.first_name;
             account.last_name = student.last_name;
+            account.username = item.username
             reply.send({ token: token, student: account });
           } else {
             reply.send("Email or Password wrong.");

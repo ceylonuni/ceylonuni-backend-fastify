@@ -33,6 +33,11 @@ module.exports = async function (fastify, opts) {
             id: true,
             first_name: true,
             last_name: true,
+            accounts:{
+              select:{
+                username: true,
+              }
+            },
             university_courses: {
               select: {
                 universities: {
@@ -356,7 +361,82 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+  fastify.post(
+    "/reject-request",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+        body: {
+          type: "object",
+          required: ["student_id"],
+          properties: {
+            student_id: {
+              type: "integer",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var friend_requests = [];
+        var send_requests = [];
+        var student = await fastify.prisma.students.findUnique({
+          where: {
+            id: request.body.student_id,
+          },
+          select: {
+            send_requests: true,
+          },
+        });
 
+        var me = await fastify.prisma.students.findUnique({
+          where: {
+            id: request.user.student_id,
+          },
+          select: {
+            friend_requests: true,
+          },
+        });
+        send_requests = JSON.parse(student.send_requests);
+        friend_requests = JSON.parse(me.friend_requests);
+        var index = send_requests.indexOf(request.user.student_id);
+        var indexMe = friend_requests.indexOf(request.body.student_id);
+        if (index !== -1) {
+          send_requests.splice(index, 1);
+        }
+        if (indexMe !== -1) {
+          friend_requests.splice(indexMe, 1);
+        }
+        var item = await fastify.prisma.students.update({
+          where: {
+            id: request.body.student_id,
+          },
+          data: {
+            send_requests: JSON.stringify(send_requests),
+            updated_at: moment().toISOString(),
+          },
+        });
+
+        await fastify.prisma.students.update({
+          where: {
+            id: request.user.student_id,
+          },
+          data: {
+            friend_requests: JSON.stringify(friend_requests),
+            updated_at: moment().toISOString(),
+          },
+        });
+        reply.send({ message: "success" });
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
   fastify.post(
     "/cancel-request",
     {
@@ -378,6 +458,17 @@ module.exports = async function (fastify, opts) {
     async (request, reply) => {
       try {
         var friend_requests = [];
+        var send_requests = [];
+
+        var me = await fastify.prisma.students.findUnique({
+          where: {
+            id: request.user.student_id,
+          },
+          select: {
+            send_requests: true,
+          },
+        });
+
         var student = await fastify.prisma.students.findUnique({
           where: {
             id: request.body.student_id,
@@ -387,9 +478,14 @@ module.exports = async function (fastify, opts) {
           },
         });
         friend_requests = JSON.parse(student.friend_requests);
+        send_requests = JSON.parse(me.send_requests);
         var index = friend_requests.indexOf(request.user.student_id);
+        var indexMe = send_requests.indexOf(request.body.student_id);
         if (index !== -1) {
           friend_requests.splice(index, 1);
+        }
+        if (indexMe !== -1) {
+          send_requests.splice(indexMe, 1);
         }
         var item = await fastify.prisma.students.update({
           where: {
@@ -397,6 +493,16 @@ module.exports = async function (fastify, opts) {
           },
           data: {
             friend_requests: JSON.stringify(friend_requests),
+            updated_at: moment().toISOString(),
+          },
+        });
+
+        await fastify.prisma.students.update({
+          where: {
+            id: request.user.student_id,
+          },
+          data: {
+            send_requests: JSON.stringify(send_requests),
             updated_at: moment().toISOString(),
           },
         });
