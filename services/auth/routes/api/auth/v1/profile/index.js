@@ -1,31 +1,112 @@
 "use strict";
 const moment = require("moment");
 module.exports = async function (fastify, opts) {
-  fastify.get(
+  fastify.post(
     "/get",
     {
-      preValidation: [fastify.verifyEmail],
+      preValidation: [fastify.authenticate],
       schema: {
         security: [{ bearerAuth: [] }],
         tags: ["Auth"],
       },
+      body: {
+        type: "object",
+        properties: {
+          username: {
+            type: "string",
+            default: "student12345678",
+          },
+        },
+      },
     },
     async (request, reply) => {
       try {
-        var item = await fastify.prisma.students.findMany({
+        var item = await fastify.prisma.accounts.findUnique({
           where: {
-            deleted_at: null,
-            id: request.user.student_id,
+            username: request.body.username,
           },
           select: {
-            first_name: true,
-            last_name: true,
-            mobile: true,
-            address: true,
+            username:true,
+            email:true,
+            students:{
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                friends:true,
+                friend_requests: true,
+                send_requests:true,
+                image_url:true,
+                accounts:{
+                  select:{
+                    username: true,
+                  }
+                },
+                university_courses: {
+                  select: {
+                    universities: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                    courses: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
+                },
+                posts:{
+                  select: {
+                    id: true,
+                    key: true,
+                    text: true,
+                    image_url: true,
+                    video_url: true,
+                    created_at: true,
+                    students: {
+                      select: {
+                        first_name: true,
+                        last_name:true,
+                        image_url: true,
+                      },
+                    },
+                    comments:{
+                      select:{
+                        text:true,
+                        created_at:true,
+                        students: {
+                          select: {
+                            first_name: true,
+                            last_name:true,
+                            image_url: true,
+                          },
+                        },
+                      }
+                    },
+                    likes:{
+                      select:{
+                        students: {
+                          select: {
+                            id:true,
+                            first_name: true,
+                            last_name:true,
+                            image_url: true,
+                          },
+                        },
+                      }
+                    }
+                  },
+                  orderBy: {
+                    id: "desc",
+                  },
+                }
+              },
+            }
           },
         });
 
-        reply.send(item[0]);
+        reply.send(item);
       } catch (error) {
         reply.send(error);
       } finally {
