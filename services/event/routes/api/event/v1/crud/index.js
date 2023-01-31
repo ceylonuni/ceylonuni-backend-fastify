@@ -57,7 +57,7 @@ module.exports = async function (fastify, opts) {
   );
 
   fastify.post(
-    "/update",
+    "/update/:key",
     {
       preValidation: [fastify.authenticate],
       schema: {
@@ -65,7 +65,7 @@ module.exports = async function (fastify, opts) {
         tags: ["Event"],
         params: {
           type: "object",
-          required: ["event_id"],
+          required: ["key"],
           properties: {
             event_id: {
               type: "integer",
@@ -118,7 +118,7 @@ module.exports = async function (fastify, opts) {
   );
 
   fastify.post(
-    "/delete",
+    "/delete/:key",
     {
       preValidation: [fastify.authenticate],
       schema: {
@@ -126,7 +126,7 @@ module.exports = async function (fastify, opts) {
         tags: ["Event"],
         params: {
           type: "object",
-          required: ["event_id"],
+          required: ["key"],
           properties: {
             event_id: {
               type: "integer",
@@ -134,7 +134,6 @@ module.exports = async function (fastify, opts) {
             },
           },
         },
-       
       },
     },
     async (request, reply) => {
@@ -144,7 +143,6 @@ module.exports = async function (fastify, opts) {
             id: request.params.event_id,
           },
           data: {
-            
             deleted_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
