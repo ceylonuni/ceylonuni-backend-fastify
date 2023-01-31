@@ -64,6 +64,9 @@ exports.up = function(db) {
     friend_requests: {
       type:'text',
     },
+    send_requests: {
+      type:'text',
+    },
     collaborator_request: {
       type:'text',
     },

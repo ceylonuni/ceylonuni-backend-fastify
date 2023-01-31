@@ -19,6 +19,11 @@ module.exports = async function (fastify, opts) {
           },
           select: {
             friends: true,
+            accounts:{
+              select:{
+                username:true,
+              }
+            }
           },
         });
 
