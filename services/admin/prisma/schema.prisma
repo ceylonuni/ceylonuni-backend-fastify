@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model migrations {
+  id     Int      @id @default(autoincrement())
+  name   String   @db.VarChar(255)
+  run_on DateTime @db.Timestamp(6)
+}
+
+model supports {
+  id           Int       @id @default(autoincrement())
+  name         String?   @db.VarChar
+  created_time DateTime? @db.Timestamptz(6)
+}
+
+model universities {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique @db.VarChar
+  created_at         DateTime?            @db.Timestamptz(6)
+  updated_at         DateTime?            @db.Timestamptz(6)
+  deleted_at         DateTime?            @db.Timestamptz(6)
+  university_courses university_courses[]
+  university_mails   university_mails[]
+}
+
+model courses {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar
+  created_at         DateTime?            @db.Timestamptz(6)
+  updated_at         DateTime?            @db.Timestamptz(6)
+  deleted_at         DateTime?            @db.Timestamptz(6)
+  university_courses university_courses[]
+}
+
+model university_courses {
+  id            Int          @id @default(autoincrement())
+  university_id Int
+  course_id     Int
+  created_at    DateTime?    @db.Timestamptz(6)
+  updated_at    DateTime?    @db.Timestamptz(6)
+  deleted_at    DateTime?    @db.Timestamptz(6)
+  courses       courses      @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "university_courses_courses_id_fk")
+  universities  universities @relation(fields: [university_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "university_courses_universities_id_fk")
+  students      students[]
+}
+
+model students {
+  id                                 Int                   @id @default(autoincrement())
+  first_name                         String                @db.VarChar
+  last_name                          String                @db.VarChar
+  mobile                             String
+  email                              String                @unique
+  address                            String
+  university_course_id               Int
+  friends                            String?
+  friend_requests                    String?
+  send_requests                      String?
+  collaborator_request               String?
+  image_url                          String?
+  created_at                         DateTime?             @db.Timestamptz(6)
+  updated_at                         DateTime?             @db.Timestamptz(6)
+  deleted_at                         DateTime?             @db.Timestamptz(6)
+  university_courses                 university_courses    @relation(fields: [university_course_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "students_university_courses_id_fk")
+  accounts                           accounts[]
+  comments                           comments[]
+  event_collaborators                event_collaborators[]
+  events_events_student_idTostudents events[]              @relation("events_student_idTostudents")
+  likes                              likes[]
+  participants                       participants[]
+  posts                              posts[]
+}
+
+model accounts {
+  id          Int       @id @default(autoincrement())
+  student_id  Int
+  email       String    @unique @db.VarChar
+  username    String    @unique @db.VarChar
+  password    String    @db.VarChar
+  isVerified  Boolean?  @default(false)
+  verified_at DateTime? @db.Timestamptz(6)
+  status      Boolean?  @default(true)
+  created_at  DateTime? @db.Timestamptz(6)
+  updated_at  DateTime? @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  students    students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "accounts_students_id_fk")
+}
+
+model university_mails {
+  id            Int          @id @default(autoincrement())
+  email         String       @db.VarChar
+  university_id Int
+  created_at    DateTime?    @db.Timestamptz(6)
+  updated_at    DateTime?    @db.Timestamptz(6)
+  deleted_at    DateTime?    @db.Timestamptz(6)
+  universities  universities @relation(fields: [university_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "university_courses_universities_id_fk")
+}
+
+model comments {
+  id         Int       @id @default(autoincrement())
+  post_id    Int
+  student_id Int
+  text       String?
+  like_count Int?
+  created_at DateTime? @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  posts      posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "comments_posts_id_fk")
+  students   students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "comments_students_id_fk")
+}
+
+model posts {
+  id         Int        @id @default(autoincrement())
+  key        String     @unique @db.VarChar
+  student_id Int
+  text       String?
+  video_url  String?
+  image_url  String?
+  event_id   Int?
+  created_at DateTime?  @db.Timestamptz(6)
+  updated_at DateTime?  @db.Timestamptz(6)
+  deleted_at DateTime?  @db.Timestamptz(6)
+  events     events?    @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "colloborators_events_id_fk")
+  students   students   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "posts_students_id_fk")
+  comments   comments[]
+  likes      likes[]
+}
+
+model likes {
+  id         Int       @id @default(autoincrement())
+  post_id    Int
+  student_id Int
+  created_at DateTime? @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  posts      posts     @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "comments_posts_id_fk")
+  students   students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "comments_students_id_fk")
+
+  @@unique([student_id, post_id], map: "Index_students_posts__student_id_post_id")
+}
+
+model event_collaborators {
+  id          Int       @id @default(autoincrement())
+  student_id  Int
+  event_id    Int
+  accepted_at DateTime? @db.Timestamptz(6)
+  created_at  DateTime? @db.Timestamptz(6)
+  updated_at  DateTime? @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  events      events    @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "colloborators_events_id_fk")
+  students    students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_students_id_fk")
+}
+
+model events {
+  id                                   Int                   @id @default(autoincrement())
+  name                                 String                @db.VarChar
+  key                                  String                @unique @db.VarChar
+  student_id                           Int
+  image_url                            String?
+  start_at                             DateTime              @db.Timestamptz(6)
+  end_at                               DateTime              @db.Timestamptz(6)
+  venue                                String                @db.VarChar
+  created_at                           DateTime?             @db.Timestamptz(6)
+  updated_at                           DateTime?             @db.Timestamptz(6)
+  deleted_at                           DateTime?             @db.Timestamptz(6)
+  students_events_student_idTostudents students              @relation("events_student_idTostudents", fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_students_id_fk")
+  event_collaborators                  event_collaborators[]
+  participants                         participants[]
+  posts                                posts[]
+}
+
+model participants {
+  id         Int       @id @default(autoincrement())
+  student_id Int
+  event_id   Int
+  status     String    @db.VarChar
+  created_at DateTime? @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+  events     events    @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "colloborators_events_id_fk")
+  students   students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "events_students_id_fk")
+}
