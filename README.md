@@ -1,6 +1,6 @@
 <div align="center">
 
-<img alt='hero logo' src="https://avatars.githubusercontent.com/u/102425191?s=200&v=4" width="50%" height="50%" />
+<img alt='hero logo' src="https://avatars.githubusercontent.com/u/102425191?s=200&v=4" width="20%" height="20%" />
 
 </div>
 
