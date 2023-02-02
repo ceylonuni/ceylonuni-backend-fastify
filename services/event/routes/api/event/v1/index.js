@@ -3,6 +3,55 @@ const { v4: uuidv4 } = require("uuid");
 const moment = require("moment");
 
 module.exports = async function (fastify, opts) {
+  fastify.get(
+    "/get",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Auth"],
+      },
+      body: {
+        type: "object",
+        properties: {
+          key: {
+            type: "string",
+            default: "egdnssjc-jjahdnd-nnakakhd",
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var items = await fastify.prisma.events.findMany({
+          select: {
+            id: true,
+            name: true,
+            key: true,
+            image_url: true,
+            start_at: true,
+            end_at: true,
+            venue: true,
+            student_id: true,
+            participants: {
+              where: {
+                student_id: request.user.student_id,
+              },
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+
+        reply.send(items);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
   fastify.post(
     "/read",
     {
@@ -28,15 +77,15 @@ module.exports = async function (fastify, opts) {
             key: request.body.key,
           },
           select: {
-            id:true,
-            name:true,
-            key:true,
+            id: true,
+            name: true,
+            key: true,
             image_url: true,
             start_at: true,
-            end_at : true,
-            venue : true,
-            student_id:true,
-            posts:{
+            end_at: true,
+            venue: true,
+            student_id: true,
+            posts: {
               select: {
                 id: true,
                 key: true,
@@ -47,40 +96,40 @@ module.exports = async function (fastify, opts) {
                 students: {
                   select: {
                     first_name: true,
-                    last_name:true,
+                    last_name: true,
                     image_url: true,
                   },
                 },
-                comments:{
-                  select:{
-                    text:true,
-                    created_at:true,
+                comments: {
+                  select: {
+                    text: true,
+                    created_at: true,
                     students: {
                       select: {
                         first_name: true,
-                        last_name:true,
+                        last_name: true,
                         image_url: true,
                       },
                     },
-                  }
+                  },
                 },
-                likes:{
-                  select:{
+                likes: {
+                  select: {
                     students: {
                       select: {
-                        id:true,
+                        id: true,
                         first_name: true,
-                        last_name:true,
+                        last_name: true,
                         image_url: true,
                       },
                     },
-                  }
-                }
+                  },
+                },
               },
               orderBy: {
                 id: "desc",
               },
-            }
+            },
           },
         });
 
@@ -138,12 +187,12 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        var image_url = null
-        if(request.body.image){
+        var image_url = null;
+        if (request.body.image) {
           image_url = await fastify.image.upload({
             image_url: request.body.image,
             key: key,
-          })  
+          });
 
           var item = await fastify.prisma.events.update({
             where: {
@@ -151,12 +200,11 @@ module.exports = async function (fastify, opts) {
             },
             data: {
               image_url: image_url,
-              updated_at:moment().toISOString(),
+              updated_at: moment().toISOString(),
             },
           });
         }
-       
-        
+
         reply.send(item);
       } catch (error) {
         reply.send(error);
@@ -244,7 +292,6 @@ module.exports = async function (fastify, opts) {
             },
           },
         },
-       
       },
     },
     async (request, reply) => {
@@ -254,7 +301,6 @@ module.exports = async function (fastify, opts) {
             id: request.params.event_id,
           },
           data: {
-            
             deleted_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
