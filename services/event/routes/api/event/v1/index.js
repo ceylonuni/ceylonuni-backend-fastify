@@ -52,6 +52,114 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+  fastify.get(
+    "/getYour",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Auth"],
+      },
+      body: {
+        type: "object",
+        properties: {
+          key: {
+            type: "string",
+            default: "egdnssjc-jjahdnd-nnakakhd",
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var items = await fastify.prisma.events.findMany({
+          where: {
+            student_id: request.user.student_id,
+          },
+          select: {
+            id: true,
+            name: true,
+            key: true,
+            image_url: true,
+            start_at: true,
+            end_at: true,
+            venue: true,
+            student_id: true,
+            participants: {
+              where: {
+                student_id: request.user.student_id,
+              },
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+
+        reply.send(items);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+  fastify.get(
+    "/getInterested",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Auth"],
+      },
+      body: {
+        type: "object",
+        properties: {
+          key: {
+            type: "string",
+            default: "egdnssjc-jjahdnd-nnakakhd",
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var items = await fastify.prisma.participants.findMany({
+          where: {
+            student_id: request.user.student_id,
+          },
+          select: {
+            events:{
+              select:{
+                id: true,
+                name: true,
+                key: true,
+                image_url: true,
+                start_at: true,
+                end_at: true,
+                venue: true,
+                student_id: true,
+                participants: {
+                  where: {
+                    student_id: request.user.student_id,
+                  },
+                  select: {
+                    status: true,
+                  },
+                },
+              }
+            }
+          },
+        });
+
+        reply.send(items);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
   fastify.post(
     "/read",
     {
