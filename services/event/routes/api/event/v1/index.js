@@ -9,7 +9,7 @@ module.exports = async function (fastify, opts) {
       preValidation: [fastify.authenticate],
       schema: {
         security: [{ bearerAuth: [] }],
-        tags: ["Auth"],
+        tags: ["Event"],
       },
       body: {
         type: "object",
@@ -24,6 +24,10 @@ module.exports = async function (fastify, opts) {
     async (request, reply) => {
       try {
         var items = await fastify.prisma.events.findMany({
+          where: {
+            status: "published",
+            deleted_at: null
+          },
           select: {
             id: true,
             name: true,
@@ -58,7 +62,7 @@ module.exports = async function (fastify, opts) {
       preValidation: [fastify.authenticate],
       schema: {
         security: [{ bearerAuth: [] }],
-        tags: ["Auth"],
+        tags: ["Event"],
       },
       body: {
         type: "object",
@@ -110,7 +114,7 @@ module.exports = async function (fastify, opts) {
       preValidation: [fastify.authenticate],
       schema: {
         security: [{ bearerAuth: [] }],
-        tags: ["Auth"],
+        tags: ["Event"],
       },
       body: {
         type: "object",
@@ -129,8 +133,8 @@ module.exports = async function (fastify, opts) {
             student_id: request.user.student_id,
           },
           select: {
-            events:{
-              select:{
+            events: {
+              select: {
                 id: true,
                 name: true,
                 key: true,
@@ -147,8 +151,8 @@ module.exports = async function (fastify, opts) {
                     status: true,
                   },
                 },
-              }
-            }
+              },
+            },
           },
         });
 
@@ -166,7 +170,7 @@ module.exports = async function (fastify, opts) {
       preValidation: [fastify.authenticate],
       schema: {
         security: [{ bearerAuth: [] }],
-        tags: ["Auth"],
+        tags: ["Event"],
       },
       body: {
         type: "object",
