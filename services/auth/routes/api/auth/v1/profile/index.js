@@ -65,6 +65,13 @@ module.exports = async function (fastify, opts) {
                     image_url: true,
                     video_url: true,
                     created_at: true,
+                    events:{
+                      select:{
+                        name: true,
+                        venue: true,
+                        key: true,
+                      }
+                    },
                     students: {
                       select: {
                         first_name: true,
