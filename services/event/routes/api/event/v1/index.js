@@ -26,12 +26,13 @@ module.exports = async function (fastify, opts) {
         var items = await fastify.prisma.events.findMany({
           where: {
             status: "published",
-            deleted_at: null
+            deleted_at: null,
           },
           select: {
             id: true,
             name: true,
             key: true,
+            status: true,
             image_url: true,
             start_at: true,
             end_at: true,
@@ -45,6 +46,16 @@ module.exports = async function (fastify, opts) {
                 status: true,
               },
             },
+            event_collaborators:{
+              where:{
+                NOT:{
+                  accepted_at: null
+                }
+              },
+              select:{
+                student_id: true
+              }
+            }
           },
         });
 
@@ -89,6 +100,7 @@ module.exports = async function (fastify, opts) {
             end_at: true,
             venue: true,
             student_id: true,
+            status: true,
             participants: {
               where: {
                 student_id: request.user.student_id,
@@ -97,6 +109,16 @@ module.exports = async function (fastify, opts) {
                 status: true,
               },
             },
+            event_collaborators:{
+              where:{
+                NOT:{
+                  accepted_at: null
+                }
+              },
+              select:{
+                student_id: true
+              }
+            }
           },
         });
 
@@ -138,6 +160,7 @@ module.exports = async function (fastify, opts) {
                 id: true,
                 name: true,
                 key: true,
+                status: true,
                 image_url: true,
                 start_at: true,
                 end_at: true,
@@ -151,8 +174,86 @@ module.exports = async function (fastify, opts) {
                     status: true,
                   },
                 },
+                event_collaborators:{
+                  where:{
+                    NOT:{
+                      accepted_at: null
+                    }
+                  },
+                  select:{
+                    student_id: true
+                  }
+                }
               },
             },
+          },
+        });
+
+        reply.send(items);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+  fastify.get(
+    "/getCollborated",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Event"],
+      },
+      body: {
+        type: "object",
+        properties: {
+          key: {
+            type: "string",
+            default: "egdnssjc-jjahdnd-nnakakhd",
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var items = await fastify.prisma.event_collaborators.findMany({
+          where: {
+            student_id: request.user.student_id,
+          },
+          select: {
+            accepted_at: true,
+              events: {
+                select: {
+                  id: true,
+                  name: true,
+                  key: true,
+                  status: true,
+                  image_url: true,
+                  start_at: true,
+                  end_at: true,
+                  venue: true,
+                  student_id: true,
+                  participants: {
+                    where: {
+                      student_id: request.user.student_id,
+                    },
+                    select: {
+                      status: true,
+                    },
+                  },
+                  event_collaborators:{
+                    where:{
+                      NOT:{
+                        accepted_at: null
+                      }
+                    },
+                    select:{
+                      student_id: true
+                    }
+                  }
+                },
+              },
           },
         });
 
@@ -194,9 +295,20 @@ module.exports = async function (fastify, opts) {
             key: true,
             image_url: true,
             start_at: true,
+            status: true,
             end_at: true,
             venue: true,
             student_id: true,
+            event_collaborators:{
+              where:{
+                NOT:{
+                  accepted_at: null
+                }
+              },
+              select:{
+                student_id: true
+              }
+            },
             posts: {
               select: {
                 id: true,
@@ -279,6 +391,9 @@ module.exports = async function (fastify, opts) {
             venue: {
               type: "string",
             },
+            collaborators: {
+              type: "array",
+            },
           },
         },
       },
@@ -298,7 +413,27 @@ module.exports = async function (fastify, opts) {
             updated_at: moment().toISOString(),
           },
         });
-
+        var collaborator = {};
+        var student = {};
+           await fastify.prisma.event_collaborators.create({
+          data: {
+            student_id: request.user.student_id,
+            event_id: event.id,
+            accepted_at: moment().toISOString(),
+            created_at: moment().toISOString(),
+            updated_at: moment().toISOString(),
+          },
+        });
+        for (var i = 0; i < request.body.collaborators.length; i++) {
+          collaborator = await fastify.prisma.event_collaborators.create({
+            data: {
+              student_id: request.body.collaborators[i],
+              event_id: event.id,
+              created_at: moment().toISOString(),
+              updated_at: moment().toISOString(),
+            },
+          });
+        }
         var image_url = null;
         if (request.body.image) {
           image_url = await fastify.image.upload({
