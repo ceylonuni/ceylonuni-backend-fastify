@@ -9,14 +9,14 @@ module.exports = fp(async function(fastify, opts) {
     exposeRoute: true,
     openapi: {
       info: {
-        title: 'Ceylonuni Auth Service API',
+        title: 'Ceylonuni Admin Service API',
         version: pack.version,
       },
       tags: [
         {
-          "name": "Auth",
-          "description": "For Auth Use",
-        },
+          "name": "Admin",
+          "description": "For Admin Use",
+        }
       ],
       components: {
         securitySchemes: {
