@@ -63,6 +63,11 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    status: {
+      type: "string",
+      notNull: true,
+      defaultValue:'pending'
+    },
     created_at: {
       type: "timestamp",
       timezone: true,

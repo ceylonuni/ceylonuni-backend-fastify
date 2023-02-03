@@ -75,7 +75,7 @@ module.exports = async function (fastify, opts) {
       preValidation: [fastify.authenticate],
       schema: {
         security: [{ bearerAuth: [] }],
-        tags: ["Socializing"],
+        tags: ["Event"],
       },
     },
     async (request, reply) => {
