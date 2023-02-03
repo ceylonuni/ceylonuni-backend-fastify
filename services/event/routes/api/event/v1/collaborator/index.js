@@ -3,7 +3,6 @@
 const moment = require("moment");
 
 module.exports = async function (fastify, opts) {
-  
   fastify.post(
     "/add",
     {
@@ -20,55 +19,49 @@ module.exports = async function (fastify, opts) {
             collaborator_id: {
               type: "integer",
             },
-            
           },
         },
       },
     },
     async (request, reply) => {
       try {
-        
         var item = await fastify.prisma.students.findMany({
           where: {
             id: request.body.collaborator_id, //1
           },
           select: {
-            collaborator_request:true,
-            
+            collaborator_request: true,
           },
         });
 
-        let collaborator_request = item[0].collaborator_request
-        collaborator_request = JSON.parse(collaborator_request)
+        let collaborator_request = item[0].collaborator_request;
+        collaborator_request = JSON.parse(collaborator_request);
 
-        const isInArray = collaborator_request.includes(request.body.collaborator_id);
-        if(isInArray){
+        const isInArray = collaborator_request.includes(
+          request.body.collaborator_id
+        );
+        if (isInArray) {
           throw new Error("Alredy collaborator");
         }
-      
-        collaborator_request.push(request.user.student_id)
+
+        collaborator_request.push(request.user.student_id);
 
         item = await fastify.prisma.students.update({
           where: {
-            id: request.body.collaborator_id
+            id: request.body.collaborator_id,
           },
           data: {
             collaborator_request: JSON.stringify(collaborator_request),
             updated_at: moment().toISOString(),
           },
         });
-        
-        let result= {
+
+        let result = {
           student_id: JSON.stringify(request.user.student_id),
-          event_id:JSON.stringify(request.body.event_id)
+          event_id: JSON.stringify(request.body.event_id),
+        };
 
-        }
-
-      
-       
         reply.send(result);
-
-        
       } catch (error) {
         reply.send(error);
       } finally {
@@ -90,66 +83,53 @@ module.exports = async function (fastify, opts) {
             event_id: {
               type: "integer",
             },
-            student_id: {
-              type: "integer",
-            },
-            
           },
         },
       },
     },
     async (request, reply) => {
       try {
-        // add studnet_id, event_id, accepeted_at to  event_colloborators
-	      // remove studnet_id from  studnet.colloborator_request
-        
-        var item = await fastify.prisma.students.findUnique({
+        var item = await fastify.prisma.event_collaborators.findMany({
           where: {
-            id: request.user.student_id, //1
-          },
-          select: {
-            collaborator_request:true,
-            
+            student_id: request.user.student_id, //1
+            event_id: request.body.event_id, //1
           },
         });
 
-        let collaborator_request = item.collaborator_request
-        collaborator_request = JSON.parse(collaborator_request)
-         
-        //remove id
-        const isInArray = collaborator_request.includes(request.body.student_id);
-        if(!isInArray){
-          throw new Error("No request");
+        if (!item[0]) {
+          throw new Error("No Item");
         }
-        collaborator_request.splice(collaborator_request.indexOf(request.body.student_id), 1);
-        
-        
-        var item = await fastify.prisma.students.update({
+
+        var collaborator = await fastify.prisma.event_collaborators.update({
           where: {
-            id: request.user.student_id, //1
+            id: item[0].id,
           },
           data: {
-            collaborator_request:JSON.stringify(collaborator_request),
-            updated_at: moment().toISOString(),
-          },
-        });
-
-      var event_collaborators = await fastify.prisma.event_collaborators.create({
-          
-          data: {
-            //student_id, event_id, accepeted_at, created_at, 
-            
-            student_id: request.user.student_id,
-            event_id: request.body.event_id,
             accepted_at: moment().toISOString(),
-            created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
         });
-        
-        reply.send(event_collaborators);
 
-        
+        var event = await fastify.prisma.event_collaborators.findMany({
+          where: {
+            event_id: request.body.event_id, //1
+            NOT:{
+              accepted_at : null
+            }
+          },
+        });
+        if(event.length > 2){
+          await fastify.prisma.events.update({
+            where: {
+              id: request.body.event_id,
+            },
+            data: {
+              status: 'published',
+              updated_at: moment().toISOString(),
+            },
+          });
+        }
+        reply.send(item);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -159,7 +139,7 @@ module.exports = async function (fastify, opts) {
   );
 
   fastify.post(
-    "/delete",
+    "/leave",
     {
       preValidation: [fastify.authenticate],
       schema: {
@@ -168,52 +148,95 @@ module.exports = async function (fastify, opts) {
         body: {
           type: "object",
           properties: {
-            
             event_id: {
               type: "integer",
             },
-            student_id: {
-              type: "integer",
-            },
-            
           },
         },
       },
     },
     async (request, reply) => {
       try {
-        
         var item = await fastify.prisma.event_collaborators.findMany({
           where: {
-            student_id: request.body.student_id,
-            event_id: request.body.event_id
-          
-          },
-          select: {
-            id:true,
-            deleted_at: true
+            student_id: request.user.student_id, //1
+            event_id: request.body.event_id, //1
           },
         });
 
-        let id = item[0].id
-       
-        if(item[0].deleted_at){
-          throw new Error("No student");
+        if (!item[0]) {
+          throw new Error("No Item");
         }
-     
-        await fastify.prisma.event_collaborators.update({
+
+        var collaborator = await fastify.prisma.event_collaborators.delete({
           where: {
-            id: id
-          },
-          data: {
-            deleted_at: moment().toISOString(),
-            updated_at: moment().toISOString(),
+            id: item[0].id,
           },
         });
-        
-        reply.send({message: 'ok'});
 
-        
+        var event = await fastify.prisma.event_collaborators.findMany({
+          where: {
+            event_id: request.body.event_id, //1
+            NOT:{
+              accepted_at : null
+            }
+          },
+        });
+        if(event.length < 3){
+          await fastify.prisma.events.update({
+            where: {
+              id: request.body.event_id,
+            },
+            data: {
+              status: 'pending',
+              updated_at: moment().toISOString(),
+            },
+          });
+        }
+        reply.send(item);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+  fastify.post(
+    "/reject",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Event"],
+        body: {
+          type: "object",
+          properties: {
+            event_id: {
+              type: "integer",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var item = await fastify.prisma.event_collaborators.findMany({
+          where: {
+            student_id: request.user.student_id, //1
+            event_id: request.body.event_id, //1
+          },
+        });
+
+        if (!item[0]) {
+          throw new Error("No Item");
+        }
+
+        var collaborator = await fastify.prisma.event_collaborators.delete({
+          where: {
+            id: item[0].id,
+          },
+        });
+        reply.send(item);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -222,6 +245,4 @@ module.exports = async function (fastify, opts) {
     }
   );
 
-
- 
 };

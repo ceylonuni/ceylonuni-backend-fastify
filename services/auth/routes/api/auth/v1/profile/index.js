@@ -8,13 +8,14 @@ module.exports = async function (fastify, opts) {
       schema: {
         security: [{ bearerAuth: [] }],
         tags: ["Auth"],
-      },
-      body: {
-        type: "object",
-        properties: {
-          username: {
-            type: "string",
-            default: "student12345678",
+
+        body: {
+          type: "object",
+          properties: {
+            username: {
+              type: "string",
+              default: "student12345678",
+            },
           },
         },
       },
@@ -26,21 +27,21 @@ module.exports = async function (fastify, opts) {
             username: request.body.username,
           },
           select: {
-            username:true,
-            email:true,
-            students:{
+            username: true,
+            email: true,
+            students: {
               select: {
                 id: true,
                 first_name: true,
                 last_name: true,
-                friends:true,
+                friends: true,
                 friend_requests: true,
-                send_requests:true,
-                image_url:true,
-                accounts:{
-                  select:{
+                send_requests: true,
+                image_url: true,
+                accounts: {
+                  select: {
                     username: true,
-                  }
+                  },
                 },
                 university_courses: {
                   select: {
@@ -56,7 +57,7 @@ module.exports = async function (fastify, opts) {
                     },
                   },
                 },
-                posts:{
+                posts: {
                   select: {
                     id: true,
                     key: true,
@@ -67,42 +68,42 @@ module.exports = async function (fastify, opts) {
                     students: {
                       select: {
                         first_name: true,
-                        last_name:true,
+                        last_name: true,
                         image_url: true,
                       },
                     },
-                    comments:{
-                      select:{
-                        text:true,
-                        created_at:true,
+                    comments: {
+                      select: {
+                        text: true,
+                        created_at: true,
                         students: {
                           select: {
                             first_name: true,
-                            last_name:true,
+                            last_name: true,
                             image_url: true,
                           },
                         },
-                      }
+                      },
                     },
-                    likes:{
-                      select:{
+                    likes: {
+                      select: {
                         students: {
                           select: {
-                            id:true,
+                            id: true,
                             first_name: true,
-                            last_name:true,
+                            last_name: true,
                             image_url: true,
                           },
                         },
-                      }
-                    }
+                      },
+                    },
                   },
                   orderBy: {
                     id: "desc",
                   },
-                }
+                },
               },
-            }
+            },
           },
         });
 
@@ -129,7 +130,7 @@ module.exports = async function (fastify, opts) {
               type: "string",
               default: "name",
             },
-            last_name:  {
+            last_name: {
               type: "string",
               default: "name",
             },
@@ -138,31 +139,29 @@ module.exports = async function (fastify, opts) {
               default: "mobile",
             },
             address: {
-                type: "string",
-                default: "address",
-              },
+              type: "string",
+              default: "address",
+            },
           },
         },
       },
     },
     async (request, reply) => {
-
       try {
         var item = await fastify.prisma.students.update({
-            where: {
-              id: request.user.id,
-            },
-            data: {
-              first_name: request.body.first_name,
-              last_name: request.body.last_name,
-              mobile: request.body.mobile,
-              address: request.body.address,
-              updated_at:moment().toISOString(),
-            },
-          });
-          
-        reply.send(item);
+          where: {
+            id: request.user.id,
+          },
+          data: {
+            first_name: request.body.first_name,
+            last_name: request.body.last_name,
+            mobile: request.body.mobile,
+            address: request.body.address,
+            updated_at: moment().toISOString(),
+          },
+        });
 
+        reply.send(item);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -170,7 +169,7 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
-  
+
   fastify.post(
     "/delete",
     {
@@ -190,20 +189,18 @@ module.exports = async function (fastify, opts) {
       },
     },
     async (request, reply) => {
-
       try {
         var item = await fastify.prisma.accounts.update({
-            where: {
+          where: {
             //   id: request.user.id,
             email: request.body.email,
-            },
-            data: {
-              deleted_at: moment().toISOString(),
-            },
-          });
-          
-        reply.send('Account Deleted');
+          },
+          data: {
+            deleted_at: moment().toISOString(),
+          },
+        });
 
+        reply.send("Account Deleted");
       } catch (error) {
         reply.send(error);
       } finally {
@@ -230,32 +227,30 @@ module.exports = async function (fastify, opts) {
       },
     },
     async (request, reply) => {
-
       try {
         var student = await fastify.prisma.students.findUnique({
           where: {
             id: request.user.id,
           },
         });
-        var image_url = null
-        if(request.body.image){
+        var image_url = null;
+        if (request.body.image) {
           image_url = await fastify.image.upload({
             image_url: request.body.image,
-            key:student.id+'_'+student.first_name,
-          })  
+            key: student.id + "_" + student.first_name,
+          });
         }
         var item = await fastify.prisma.students.update({
-            where: {
-              id: request.user.id,
-            },
-            data: {
-              image_url: image_url,
-              updated_at:moment().toISOString(),
-            },
-          });
-          
-        reply.send(item);
+          where: {
+            id: request.user.id,
+          },
+          data: {
+            image_url: image_url,
+            updated_at: moment().toISOString(),
+          },
+        });
 
+        reply.send(item);
       } catch (error) {
         reply.send(error);
       } finally {

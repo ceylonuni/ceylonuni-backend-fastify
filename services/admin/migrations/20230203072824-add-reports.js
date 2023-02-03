@@ -15,7 +15,7 @@ exports.setup = function (options, seedLink) {
 };
 
 exports.up = function (db) {
-  return db.createTable("events", {
+  return db.createTable("reports", {
     id: {
       type: "int",
       unsigned: true,
@@ -23,20 +23,19 @@ exports.up = function (db) {
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
-      type: "string",
+    model: {
+      type: "text",
       notNull: true,
     },
-    key: {
-      type: "string",
+    model_id: {
+      type: "int",
       notNull: true,
-      unique: true,
     },
     student_id: {
       type: "int",
       notNull: true,
       foreignKey: {
-        name: "events_students_id_fk",
+        name: "reports_students_id_fk",
         table: "students",
         rules: {
           onDelete: "CASCADE",
@@ -45,28 +44,12 @@ exports.up = function (db) {
         mapping: "id",
       },
     },
-
-    image_url: {
+    reason: {
       type: "text",
-    },
-    start_at: {
-      type: "timestamp",
-      timezone: true,
       notNull: true,
     },
-    end_at: {
-      type: "timestamp",
-      timezone: true,
-      notNull: true,
-    },
-    venue: {
-      type: "string",
-      notNull: true,
-    },
-    status: {
-      type: "string",
-      notNull: true,
-      defaultValue:'pending'
+    data: {
+      type: "text",
     },
     created_at: {
       type: "timestamp",
@@ -84,7 +67,7 @@ exports.up = function (db) {
 };
 
 exports.down = function (db) {
-  return db.dropTable("events");
+  return db.dropTable("reports");
 };
 
 exports._meta = {
