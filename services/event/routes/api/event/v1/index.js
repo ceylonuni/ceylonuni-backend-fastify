@@ -46,16 +46,16 @@ module.exports = async function (fastify, opts) {
                 status: true,
               },
             },
-            event_collaborators:{
-              where:{
-                NOT:{
-                  accepted_at: null
-                }
+            event_collaborators: {
+              where: {
+                NOT: {
+                  accepted_at: null,
+                },
               },
-              select:{
-                student_id: true
-              }
-            }
+              select: {
+                student_id: true,
+              },
+            },
           },
         });
 
@@ -109,16 +109,16 @@ module.exports = async function (fastify, opts) {
                 status: true,
               },
             },
-            event_collaborators:{
-              where:{
-                NOT:{
-                  accepted_at: null
-                }
+            event_collaborators: {
+              where: {
+                NOT: {
+                  accepted_at: null,
+                },
               },
-              select:{
-                student_id: true
-              }
-            }
+              select: {
+                student_id: true,
+              },
+            },
           },
         });
 
@@ -174,16 +174,16 @@ module.exports = async function (fastify, opts) {
                     status: true,
                   },
                 },
-                event_collaborators:{
-                  where:{
-                    NOT:{
-                      accepted_at: null
-                    }
+                event_collaborators: {
+                  where: {
+                    NOT: {
+                      accepted_at: null,
+                    },
                   },
-                  select:{
-                    student_id: true
-                  }
-                }
+                  select: {
+                    student_id: true,
+                  },
+                },
               },
             },
           },
@@ -223,37 +223,37 @@ module.exports = async function (fastify, opts) {
           },
           select: {
             accepted_at: true,
-              events: {
-                select: {
-                  id: true,
-                  name: true,
-                  key: true,
-                  status: true,
-                  image_url: true,
-                  start_at: true,
-                  end_at: true,
-                  venue: true,
-                  student_id: true,
-                  participants: {
-                    where: {
-                      student_id: request.user.student_id,
-                    },
-                    select: {
-                      status: true,
+            events: {
+              select: {
+                id: true,
+                name: true,
+                key: true,
+                status: true,
+                image_url: true,
+                start_at: true,
+                end_at: true,
+                venue: true,
+                student_id: true,
+                participants: {
+                  where: {
+                    student_id: request.user.student_id,
+                  },
+                  select: {
+                    status: true,
+                  },
+                },
+                event_collaborators: {
+                  where: {
+                    NOT: {
+                      accepted_at: null,
                     },
                   },
-                  event_collaborators:{
-                    where:{
-                      NOT:{
-                        accepted_at: null
-                      }
-                    },
-                    select:{
-                      student_id: true
-                    }
-                  }
+                  select: {
+                    student_id: true,
+                  },
                 },
               },
+            },
           },
         });
 
@@ -299,15 +299,45 @@ module.exports = async function (fastify, opts) {
             end_at: true,
             venue: true,
             student_id: true,
-            event_collaborators:{
-              where:{
-                NOT:{
-                  accepted_at: null
-                }
+            event_collaborators: {
+              where: {
+                NOT: {
+                  accepted_at: null,
+                },
               },
-              select:{
-                student_id: true
-              }
+              select: {
+                student_id: true,
+              },
+            },
+            participants: {
+              select: {
+                students: {
+                  select: {
+                    first_name: true,
+                    last_name: true,
+                    image_url: true,
+                    accounts: {
+                      select: {
+                        username: true,
+                      },
+                    },
+                    university_courses: {
+                      select: {
+                        universities: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                        courses: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
             posts: {
               select: {
@@ -415,7 +445,7 @@ module.exports = async function (fastify, opts) {
         });
         var collaborator = {};
         var student = {};
-           await fastify.prisma.event_collaborators.create({
+        await fastify.prisma.event_collaborators.create({
           data: {
             student_id: request.user.student_id,
             event_id: event.id,

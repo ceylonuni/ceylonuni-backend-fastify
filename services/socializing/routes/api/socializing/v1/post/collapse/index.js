@@ -68,6 +68,13 @@ module.exports = async function (fastify, opts) {
                 }
               },
             },
+            events:{
+              select:{
+                name: true,
+                venue: true,
+                key: true,
+              }
+            },
             comments:{
               select:{
                 text:true,
