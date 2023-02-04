@@ -64,6 +64,117 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+
+  fastify.post(
+    "/read",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+      },
+      body: {
+        type: "object",
+        properties: {
+          key: {
+            type: "string",
+            default: "egdnssjc-jjahdnd-nnakakhd",
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var item = await fastify.prisma.posts.findUnique({
+          where: {
+            key: request.body.key,
+          },
+          select: {
+            id: true,
+            key: true,
+            text: true,
+            image_url: true,
+            video_url: true,
+            created_at: true,
+            students: {
+              select: {
+                first_name: true,
+                last_name:true,
+                image_url: true,
+                accounts:{
+                  select:{
+                    username:true,
+                  }
+                }
+              },
+            },
+            events:{
+              select:{
+                name: true,
+                venue: true,
+                key: true,
+              }
+            },
+            comments:{
+              select:{
+                text:true,
+                created_at:true,
+                students: {
+                  select: {
+                    first_name: true,
+                    last_name:true,
+                    image_url: true,
+                    accounts:{
+                      select:{
+                        username:true,
+                      }
+                    }
+                  },
+                },
+              }
+            },
+            likes:{
+              select:{
+                students: {
+                  select: {
+                    id:true,
+                    first_name: true,
+                    last_name:true,
+                    image_url: true,
+                    accounts:{
+                      select:{
+                        username:true,
+                      }
+                    },
+                    university_courses: {
+                      select: {
+                        universities: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                        courses: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              }
+            }
+          },
+        });
+
+        reply.send(item);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
   //get all own posts
   fastify.get(
     "/all",
