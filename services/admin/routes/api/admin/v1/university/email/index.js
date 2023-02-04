@@ -26,7 +26,6 @@ module.exports = async function (fastify, opts) {
     }
   );
 
-
   fastify.post(
     "/add",
     {
@@ -34,15 +33,15 @@ module.exports = async function (fastify, opts) {
         tags: ["Admin"],
         body: {
           type: "object",
-          required: ["university_id","email"],
+          required: ["university_id", "email"],
           properties: {
             email: {
               type: "string",
-              default:"example@stu.kln.ac.lk"
+              default: "example@stu.kln.ac.lk",
             },
             university_id: {
               type: "integer",
-              default:1
+              default: 1,
             },
           },
           // example: {
@@ -56,9 +55,9 @@ module.exports = async function (fastify, opts) {
         var item = await fastify.prisma.university_mails.create({
           data: {
             email: request.body.email,
-            university_id:request.body.university_id,
-            created_at:moment().toISOString(),
-            updated_at:moment().toISOString(),
+            university_id: request.body.university_id,
+            created_at: moment().toISOString(),
+            updated_at: moment().toISOString(),
           },
         });
         reply.send(item);
@@ -99,10 +98,46 @@ module.exports = async function (fastify, opts) {
           },
           data: {
             email: request.body.email,
-            updated_at:moment().toISOString(),
+            updated_at: moment().toISOString(),
           },
         });
         reply.send(item);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.post(
+    "/delete",
+    {
+      schema: {
+        tags: ["Admin"],
+        body: {
+          type: "object",
+          properties: {
+            university_email_id: {
+              type: "integer",
+              default: 1,
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var item = await fastify.prisma.university_mails.update({
+          where: {
+            id: request.body.university_email_id,
+          },
+          data: {
+            deleted_at: moment().toISOString(),
+          },
+        });
+
+        reply.send("University Mail Deleted");
       } catch (error) {
         reply.send(error);
       } finally {
