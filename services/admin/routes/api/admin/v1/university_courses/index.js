@@ -115,4 +115,40 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+
+  fastify.post(
+    "/delete",
+    {
+      schema: {
+        tags: ["Admin"],
+        body: {
+          type: "object",
+          properties: {
+            university_course_id: {
+              type: "integer",
+              default: 1,
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var item = await fastify.prisma.university_courses.update({
+          where: {
+            id: request.body.university_course_id,
+          },
+          data: {
+            deleted_at: moment().toISOString(),
+          },
+        });
+
+        reply.send("University Course Deleted");
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
 };
