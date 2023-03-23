@@ -47,7 +47,7 @@ module.exports = async function (fastify, opts) {
         tags: ["Report"],
         body: {
           type: "object",
-          //   required: ["model, model_id, student_id, reason"],
+           // required: ["model, model_id, reason"],
           properties: {
             model: {
               type: "string",
