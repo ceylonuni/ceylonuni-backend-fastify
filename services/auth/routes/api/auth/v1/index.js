@@ -165,7 +165,7 @@ console.log(account)
             account.username = item.username
             reply.send({ token: token, student: account });
           } else {
-            reply.send("Email or Password wrong.");
+            throw new Error("Email or Password wrong.");
           }
         } else {
           throw new Error("This email don't have an account");
