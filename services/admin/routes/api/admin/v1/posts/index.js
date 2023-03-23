@@ -1,6 +1,6 @@
 "use strict";
-
-const moment = require("moment");
+var moment = require("moment");
+const { v4: uuidv4 } = require("uuid");
 
 module.exports = async function (fastify, opts) {
   fastify.get(
@@ -12,11 +12,12 @@ module.exports = async function (fastify, opts) {
     },
     async (request, reply) => {
       try {
-        var items = await fastify.prisma.university_mails.findMany({
+        var items = await fastify.prisma.posts.findMany({
           where: {
             deleted_at: null,
           },
         });
+        // console.log(moment().toISOString())
         reply.send(items);
       } catch (error) {
         reply.send(error);
@@ -33,34 +34,59 @@ module.exports = async function (fastify, opts) {
         tags: ["Admin"],
         body: {
           type: "object",
-          required: ["university_id", "email"],
+          required: ["student_id"],
           properties: {
-            email: {
-              type: "string",
-              default: "example@stu.kln.ac.lk",
-            },
-            university_id: {
+            student_id: {
               type: "integer",
               default: 1,
             },
+            text: {
+              type: "string",
+            },
+            video_url: {
+              type: "string",
+            },
+            image_url: {
+              type: "string",
+            },
           },
-          // example: {
-          //   email: "Example School",
-          // },
         },
       },
     },
     async (request, reply) => {
       try {
-        var item = await fastify.prisma.university_mails.create({
+        if (
+          !request.body.student_id &&
+          !request.body.text &&
+          !request.body.image_url &&
+          !request.body.video_url
+        ) {
+          throw new Error("Body should be have at lest one content.");
+        }
+
+        var image_url = null;
+        var key = uuidv4();
+
+        if (request.body.image_url) {
+          image_url = await fastify.image.upload({
+            image_url: request.body.image_url,
+            key: key,
+          });
+        }
+
+        var post = await fastify.prisma.posts.create({
           data: {
-            email: request.body.email,
-            university_id: request.body.university_id,
+            student_id: request.body.student_id,
+            key: key,
+            text: request.body.text,
+            image_url: image_url,
+            video_url: request.body.video_url,
             created_at: moment().toISOString(),
             updated_at: moment().toISOString(),
           },
         });
-        reply.send(item);
+
+        reply.send(post);
       } catch (error) {
         reply.send(error);
       } finally {
@@ -76,15 +102,20 @@ module.exports = async function (fastify, opts) {
         tags: ["Admin"],
         body: {
           type: "object",
-          required: ["id", "email"],
+          required: ["id"],
           properties: {
             id: {
               type: "integer",
               default: 1,
             },
-            email: {
+            text: {
               type: "string",
-              default: "example@stu.kln.ac.lk",
+            },
+            video_url: {
+              type: "string",
+            },
+            image_url: {
+              type: "string",
             },
           },
         },
@@ -92,12 +123,12 @@ module.exports = async function (fastify, opts) {
     },
     async (request, reply) => {
       try {
-        var item = await fastify.prisma.university_mails.update({
+        var item = await fastify.prisma.posts.update({
           where: {
             id: request.body.id,
           },
           data: {
-            email: request.body.email,
+            text: request.body.text,
             updated_at: moment().toISOString(),
           },
         });
@@ -118,7 +149,7 @@ module.exports = async function (fastify, opts) {
         body: {
           type: "object",
           properties: {
-            university_email_id: {
+            id: {
               type: "integer",
               default: 1,
             },
@@ -128,16 +159,16 @@ module.exports = async function (fastify, opts) {
     },
     async (request, reply) => {
       try {
-        var item = await fastify.prisma.university_mails.update({
+        var item = await fastify.prisma.posts.update({
           where: {
-            id: request.body.university_email_id,
+            id: request.body.id,
           },
           data: {
             deleted_at: moment().toISOString(),
           },
         });
 
-        reply.send("University Mail Deleted");
+        reply.send("Post Deleted");
       } catch (error) {
         reply.send(error);
       } finally {
