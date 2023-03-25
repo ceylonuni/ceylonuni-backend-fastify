@@ -36,15 +36,15 @@ module.exports = async function (fastify, opts) {
         ) {
           throw new Error("Body should be have at lest one content.");
         }
-        var image_url = null
-        var key = uuidv4()
-        if(request.body.image_url){
+        var image_url = null;
+        var key = uuidv4();
+        if (request.body.image_url) {
           image_url = await fastify.image.upload({
             image_url: request.body.image_url,
-            key:key,
-          })  
+            key: key,
+          });
         }
-        
+
         var post = await fastify.prisma.posts.create({
           data: {
             student_id: request.user.student_id,
@@ -72,13 +72,13 @@ module.exports = async function (fastify, opts) {
       schema: {
         security: [{ bearerAuth: [] }],
         tags: ["Socializing"],
-      },
-      body: {
-        type: "object",
-        properties: {
-          key: {
-            type: "string",
-            default: "egdnssjc-jjahdnd-nnakakhd",
+        body: {
+          type: "object",
+          properties: {
+            key: {
+              type: "string",
+              default: "egdnssjc-jjahdnd-nnakakhd",
+            },
           },
         },
       },
@@ -96,55 +96,56 @@ module.exports = async function (fastify, opts) {
             image_url: true,
             video_url: true,
             created_at: true,
+            deleted_at: true,
             students: {
               select: {
                 first_name: true,
-                last_name:true,
+                last_name: true,
                 image_url: true,
-                accounts:{
-                  select:{
-                    username:true,
-                  }
-                }
+                accounts: {
+                  select: {
+                    username: true,
+                  },
+                },
               },
             },
-            events:{
-              select:{
+            events: {
+              select: {
                 name: true,
                 venue: true,
                 key: true,
-              }
+              },
             },
-            comments:{
-              select:{
-                text:true,
-                created_at:true,
+            comments: {
+              select: {
+                text: true,
+                created_at: true,
                 students: {
                   select: {
                     first_name: true,
-                    last_name:true,
+                    last_name: true,
                     image_url: true,
-                    accounts:{
-                      select:{
-                        username:true,
-                      }
-                    }
+                    accounts: {
+                      select: {
+                        username: true,
+                      },
+                    },
                   },
                 },
-              }
+              },
             },
-            likes:{
-              select:{
+            likes: {
+              select: {
                 students: {
                   select: {
-                    id:true,
+                    id: true,
                     first_name: true,
-                    last_name:true,
+                    last_name: true,
                     image_url: true,
-                    accounts:{
-                      select:{
-                        username:true,
-                      }
+                    accounts: {
+                      select: {
+                        username: true,
+                      },
                     },
                     university_courses: {
                       select: {
@@ -162,11 +163,13 @@ module.exports = async function (fastify, opts) {
                     },
                   },
                 },
-              }
-            }
+              },
+            },
           },
         });
-
+        if (item.deleted_at) {
+          throw new Error("Post not available.");
+        }
         reply.send(item);
       } catch (error) {
         reply.send(error);
@@ -190,10 +193,53 @@ module.exports = async function (fastify, opts) {
         const results = await fastify.prisma.posts.findMany({
           where: {
             student_id: request.user.student_id,
+            deleted_at:null
           },
         });
 
         reply.send(results);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.post(
+    "/delete",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+        body: {
+          type: "object",
+          properties: {
+            id: {
+              type: "integer",
+              default: 1,
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        if (!request.body.id) {
+          throw new Error("Body should be have id.");
+        }
+
+        var post = await fastify.prisma.posts.update({
+          where: {
+            id: request.body.id,
+          },
+          data: {
+            deleted_at: moment().toISOString(),
+            updated_at: moment().toISOString(),
+          },
+        });
+        reply.send({ message: "success" });
       } catch (error) {
         reply.send(error);
       } finally {
