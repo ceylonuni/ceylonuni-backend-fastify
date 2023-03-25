@@ -93,6 +93,7 @@ module.exports = async function (fastify, opts) {
             id: true,
             key: true,
             text: true,
+            student_id: true,
             image_url: true,
             video_url: true,
             created_at: true,
