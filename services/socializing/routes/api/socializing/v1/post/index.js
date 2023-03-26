@@ -179,6 +179,45 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+  fastify.post(
+    "/edit",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+        body: {
+          type: "object",
+          properties: {
+            key: {
+              type: "string",
+              default: "egdnssjc-jjahdnd-nnakakhd",
+            },
+            text: {
+              type: "string",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var item = await fastify.prisma.posts.update({
+          where: {
+            key: request.body.key,
+          },
+          data:{
+            text: request.body.text
+          }
+        });
+        reply.send({ message: "success" });
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
   //get all own posts
   fastify.get(
     "/all",
