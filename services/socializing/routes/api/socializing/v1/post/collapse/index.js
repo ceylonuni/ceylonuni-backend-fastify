@@ -58,58 +58,64 @@ module.exports = async function (fastify, opts) {
             created_at: true,
             students: {
               select: {
+                id: true,
                 first_name: true,
-                last_name:true,
+                last_name: true,
                 image_url: true,
-                accounts:{
-                  select:{
-                    username:true,
-                  }
-                }
+                accounts: {
+                  select: {
+                    username: true,
+                  },
+                },
               },
             },
-            events:{
-              select:{
+            events: {
+              select: {
                 name: true,
                 venue: true,
                 key: true,
-              }
+              },
             },
-            comments:{
-              select:{
-                text:true,
-                created_at:true,
+            comments: {
+              where: {
+                deleted_at: null,
+              },
+              select: {
+                id: true,
+                text: true,
+                created_at: true,
                 students: {
                   select: {
+                    id: true,
                     first_name: true,
-                    last_name:true,
+                    last_name: true,
                     image_url: true,
-                    accounts:{
-                      select:{
-                        username:true,
-                      }
-                    }
+                    accounts: {
+                      select: {
+                        username: true,
+                      },
+                    },
                   },
                 },
-              }
+              },
             },
-            likes:{
-              select:{
+            likes: {
+              select: {
                 students: {
                   select: {
-                    id:true,
+                    id: true,
                     first_name: true,
-                    last_name:true,
+                    last_name: true,
                     image_url: true,
-                    accounts:{
-                      select:{
-                        username:true,
-                      }
-                    }
+                    accounts: {
+                      select: {
+                        username: true,
+                      },
+                    },
                   },
                 },
-              }
-            }
+              },
+            },
           },
           orderBy: {
             id: "desc",
