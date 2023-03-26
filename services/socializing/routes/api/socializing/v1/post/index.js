@@ -93,6 +93,7 @@ module.exports = async function (fastify, opts) {
             id: true,
             key: true,
             text: true,
+            student_id: true,
             image_url: true,
             video_url: true,
             created_at: true,
@@ -171,6 +172,45 @@ module.exports = async function (fastify, opts) {
           throw new Error("Post not available.");
         }
         reply.send(item);
+      } catch (error) {
+        reply.send(error);
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+  fastify.post(
+    "/edit",
+    {
+      preValidation: [fastify.authenticate],
+      schema: {
+        security: [{ bearerAuth: [] }],
+        tags: ["Socializing"],
+        body: {
+          type: "object",
+          properties: {
+            key: {
+              type: "string",
+              default: "egdnssjc-jjahdnd-nnakakhd",
+            },
+            text: {
+              type: "string",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        var item = await fastify.prisma.posts.update({
+          where: {
+            key: request.body.key,
+          },
+          data:{
+            text: request.body.text
+          }
+        });
+        reply.send({ message: "success" });
       } catch (error) {
         reply.send(error);
       } finally {
