@@ -33,6 +33,13 @@ module.exports = async function (fastify, opts) {
             id: true,
             first_name: true,
             last_name: true,
+            id: true,
+            first_name: true,
+            last_name: true,
+            friends:true,
+            friend_requests: true,
+            send_requests:true,
+            image_url:true,
             accounts:{
               select:{
                 username: true,
