@@ -1,0 +1,46 @@
+{
+  "name": "ceylonuni-backend",
+  "version": "1.0.0",
+  "description": "This project was bootstrapped with Fastify-CLI.",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "tap \"test/**/*.test.js\"",
+    "start": "fastify start -l info app.js",
+    "dev": "fastify start -w -l info -P app.js -p 3001"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/autoload": "^5.0.0",
+    "@fastify/cors": "^8.1.0",
+    "@fastify/env": "^4.1.0",
+    "@fastify/formbody": "^7.2.0",
+    "@fastify/jwt": "^6.3.2",
+    "@fastify/postgres": "^5.1.0",
+    "@fastify/sensible": "^5.0.0",
+    "@fastify/static": "^6.5.0",
+    "@fastify/swagger": "^7.5.1",
+    "@prisma/client": "^4.3.1",
+    "bcrypt": "^5.0.1",
+    "cloudinary": "^1.32.0",
+    "db-migrate": "^0.11.13",
+    "db-migrate-pg": "^1.2.2",
+    "fastify": "^4.0.0",
+    "fastify-cli": "^5.4.1",
+    "fastify-mailer": "^2.3.1",
+    "fastify-plugin": "^4.0.0",
+    "fastify-prisma-client": "^3.0.0",
+    "moment": "^2.29.4",
+    "nodemailer": "^6.7.8",
+    "pg": "^8.8.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^4.3.1",
+    "tap": "^16.1.0"
+  }
+}
