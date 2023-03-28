@@ -5,7 +5,9 @@ module.exports = async function (fastify, opts) {
   fastify.get(
     "/all",
     {
+      preValidation: [fastify.authIsAdmin],
       schema: {
+        security: [{ bearerAuth: [] }],
         tags: ["Admin"],
       },
     },
@@ -29,7 +31,9 @@ module.exports = async function (fastify, opts) {
   fastify.post(
     "/delete",
     {
+      preValidation: [fastify.authIsAdmin],
       schema: {
+        security: [{ bearerAuth: [] }],
         tags: ["Admin"],
         body: {
           type: "object",

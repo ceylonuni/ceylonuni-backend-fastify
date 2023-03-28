@@ -200,3 +200,13 @@ model reports {
   deleted_at DateTime? @db.Timestamptz(6)
   students   students  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "reports_students_id_fk")
 }
+
+model admins {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique @db.VarChar
+  password   String    @db.VarChar
+  mobile     String    @db.VarChar
+  created_at DateTime? @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  deleted_at DateTime? @db.Timestamptz(6)
+}

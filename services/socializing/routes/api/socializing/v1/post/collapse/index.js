@@ -1,5 +1,6 @@
 "use strict";
 const moment = require("moment");
+const _ = require("lodash");
 module.exports = async function (fastify, opts) {
   fastify.get(
     "/all",
@@ -44,10 +45,13 @@ module.exports = async function (fastify, opts) {
         console.log(request.user.student_id, friends_ids);
 
         //get active friends posts and own
-        const results = await fastify.prisma.posts.findMany({
+        const posts = await fastify.prisma.posts.findMany({
           where: {
             student_id: { in: friends_ids },
             deleted_at: null,
+            AND: {
+              event_id: null,
+            },
           },
           select: {
             id: true,
@@ -77,7 +81,7 @@ module.exports = async function (fastify, opts) {
               },
             },
             comments: {
-              where: {
+              where:{
                 deleted_at: null,
               },
               select: {
@@ -121,7 +125,90 @@ module.exports = async function (fastify, opts) {
             id: "desc",
           },
         });
-        reply.send(results);
+
+        //get all event posts
+        const event_posts = await fastify.prisma.posts.findMany({
+          where: {
+            NOT: {
+              event_id: null,
+            },
+          },
+          select: {
+            id: true,
+            key: true,
+            text: true,
+            image_url: true,
+            video_url: true,
+            created_at: true,
+            students: {
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                image_url: true,
+                accounts: {
+                  select: {
+                    username: true,
+                  },
+                },
+              },
+            },
+            events: {
+              select: {
+                name: true,
+                venue: true,
+                key: true,
+              },
+            },
+            comments:{
+              where:{
+                deleted_at: null,
+              },
+              select:{
+                id: true,
+                text:true,
+                created_at:true,
+                students: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    image_url: true,
+                    accounts: {
+                      select: {
+                        username: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            likes: {
+              select: {
+                students: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    image_url: true,
+                    accounts: {
+                      select: {
+                        username: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            id: "desc",
+          },
+        });
+
+        var results = _.concat(posts, event_posts);
+        var result = _.orderBy(results, ["created_at"], ["desc"]);
+        reply.send(result);
       } catch (error) {
         reply.send(error);
       } finally {

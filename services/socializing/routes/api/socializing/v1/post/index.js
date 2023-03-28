@@ -122,6 +122,7 @@ module.exports = async function (fastify, opts) {
                 deleted_at: null,
               },
               select: {
+                id: true,
                 text: true,
                 created_at: true,
                 students: {
