@@ -118,11 +118,15 @@ module.exports = async function (fastify, opts) {
               },
             },
             comments: {
+              where: {
+                deleted_at: null,
+              },
               select: {
                 text: true,
                 created_at: true,
                 students: {
                   select: {
+                    id: true,
                     first_name: true,
                     last_name: true,
                     image_url: true,
@@ -206,9 +210,9 @@ module.exports = async function (fastify, opts) {
           where: {
             key: request.body.key,
           },
-          data:{
-            text: request.body.text
-          }
+          data: {
+            text: request.body.text,
+          },
         });
         reply.send({ message: "success" });
       } catch (error) {
@@ -233,7 +237,7 @@ module.exports = async function (fastify, opts) {
         const results = await fastify.prisma.posts.findMany({
           where: {
             student_id: request.user.student_id,
-            deleted_at:null
+            deleted_at: null,
           },
         });
 
