@@ -81,11 +81,16 @@ module.exports = async function (fastify, opts) {
               },
             },
             comments: {
+              where:{
+                deleted_at: null,
+              },
               select: {
+                id: true,
                 text: true,
                 created_at: true,
                 students: {
                   select: {
+                    id: true,
                     first_name: true,
                     last_name: true,
                     image_url: true,
@@ -156,7 +161,11 @@ module.exports = async function (fastify, opts) {
               },
             },
             comments:{
+              where:{
+                deleted_at: null,
+              },
               select:{
+                id: true,
                 text:true,
                 created_at:true,
                 students: {
