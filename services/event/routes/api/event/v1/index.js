@@ -154,7 +154,7 @@ module.exports = async function (fastify, opts) {
           where: {
             student_id: request.user.student_id,
             events: {
-              status: "pending",
+              status: "published",
             },
           },
           select: {
@@ -501,16 +501,6 @@ module.exports = async function (fastify, opts) {
       schema: {
         security: [{ bearerAuth: [] }],
         tags: ["Event"],
-        params: {
-          type: "object",
-          required: ["event_id"],
-          properties: {
-            event_id: {
-              type: "integer",
-              default: 1,
-            },
-          },
-        },
         body: {
           //name, student_id, collaborator_id str_date, end_date, venue
           type: "object",
@@ -518,7 +508,9 @@ module.exports = async function (fastify, opts) {
             name: {
               type: "string",
             },
-
+            key: {
+              type: "string",
+            },
             start_at: {
               type: "string",
             },
@@ -528,6 +520,9 @@ module.exports = async function (fastify, opts) {
             venue: {
               type: "string",
             },
+            collaborators: {
+              type: "array",
+            },
           },
         },
       },
@@ -536,16 +531,50 @@ module.exports = async function (fastify, opts) {
       try {
         var event = await fastify.prisma.events.update({
           where: {
-            id: request.params.event_id,
+            key: request.body.key,
           },
           data: {
             name: request.body.name,
             venue: request.body.venue,
-            start_at: moment().toISOString(),
-            end_at: moment().toISOString(),
+            start_at: request.body.start_at,
+            end_at: request.body.end_at,
             updated_at: moment().toISOString(),
           },
         });
+
+        // var Collaborates = request.body.collaborators;
+
+        // var oldCollaborates = await fastify.prisma.event_collaborators.findMany(
+        //   {
+        //     where: {
+        //       event_id: event.id, //1
+        //       NOT: {
+        //         student_id: request.user.student_id,
+        //       },
+        //     },
+        //   }
+        // );
+        // var collaborator = {};
+        // for (var i = 0; i < request.body.collaborators.length; i++) {
+        //   const foundObject = oldCollaborates.find(
+        //     (obj) => obj.student_id === request.body.collaborators[i]
+        //   );
+
+        //   if (foundObject) {
+        //     console.log(foundObject);
+        //   } else {
+
+        //     collaborator = await fastify.prisma.event_collaborators.create({
+        //       data: {
+        //         student_id: request.body.collaborators[i],
+        //         event_id: event.id,
+        //         created_at: moment().toISOString(),
+        //         updated_at: moment().toISOString(),
+        //       },
+        //     });
+        //   }
+        // }
+
         reply.send(event);
       } catch (error) {
         reply.send(error);
