@@ -153,6 +153,9 @@ module.exports = async function (fastify, opts) {
         var items = await fastify.prisma.participants.findMany({
           where: {
             student_id: request.user.student_id,
+            events: {
+              status: "pending",
+            },
           },
           select: {
             events: {

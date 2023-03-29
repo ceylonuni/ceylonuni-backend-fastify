@@ -58,6 +58,9 @@ module.exports = async function (fastify, opts) {
                   },
                 },
                 posts: {
+                  where: {
+                    deleted_at: null,
+                  },
                   select: {
                     id: true,
                     key: true,
@@ -65,23 +68,24 @@ module.exports = async function (fastify, opts) {
                     image_url: true,
                     video_url: true,
                     created_at: true,
-                    events:{
-                      select:{
+                    events: {
+                      select: {
                         name: true,
                         venue: true,
                         key: true,
-                      }
+                      },
                     },
                     students: {
                       select: {
+                        id: true,
                         first_name: true,
                         last_name: true,
                         image_url: true,
                       },
                     },
                     comments: {
-                      where:{
-                        deleted_at: null
+                      where: {
+                        deleted_at: null,
                       },
                       select: {
                         id: true,
